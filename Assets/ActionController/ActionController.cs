@@ -21,7 +21,7 @@ public class ActionController : MonoBehaviour {
 		nextAction = Action.Move;
 		transform.localScale = new Vector2(Screen.width, Screen.height);
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		if(player == null) {
@@ -37,6 +37,8 @@ public class ActionController : MonoBehaviour {
 	}
 
 	void OnMouseDown() {
+        if(player == null) return;
+        
 		Vector3 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		Vector3 direction = position - player.transform.position;
 
@@ -51,5 +53,5 @@ public class ActionController : MonoBehaviour {
         }
 		nextAction = Action.Move;
     }
-	
+
 }

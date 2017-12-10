@@ -16,8 +16,7 @@ public class SyncController : MonoBehaviour {
 
 	private string playerId;
 
-	public void Awake() 
-	{
+	public void Awake() {
         mapController = GameObject.FindObjectOfType<MapController>();
 		playersList = new List<Player>();
         fireballsList = new List<Fireball>();
@@ -26,20 +25,21 @@ public class SyncController : MonoBehaviour {
 
     public void Start() {
 		socket.On("open", Open);
-        socket.On("sync", Sync);
         socket.On("created", PlayerCreated);
         socket.On("map", CreateMap);
+
+		socket.On("sync", Sync);
+		socket.On("object_deleted", DeletePlayer);
+
         socket.On("error", Error);
         socket.On("close", Close);
     }
 
-	void Open(SocketIOEvent e)
-	{
+	void Open(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Open received: " + e.name + " " + e.data);
 	}
 
-    void PlayerCreated(SocketIOEvent e)
-    {
+    void PlayerCreated(SocketIOEvent e) {
         this.playerId = e.data["id"].str;
     }
 
@@ -47,8 +47,7 @@ public class SyncController : MonoBehaviour {
         mapController.CreateMap(e.data);
     }
 
-    void Sync(SocketIOEvent e)
-    {
+    void Sync(SocketIOEvent e) {
 		List<JSONObject> receivedPlayersList = e.data["players"].list;
 		for (int i = 0; i < receivedPlayersList.Count; i++) {
 			JSONObject player = receivedPlayersList[i];
@@ -79,14 +78,18 @@ public class SyncController : MonoBehaviour {
 
         }
     }
-	
-	void Error(SocketIOEvent e)
-	{
+
+	void DeletePlayer(SocketIOEvent e) {
+		Player playerInList = playersList.Find(x => x.id == e.data["id"].str);
+		playersList.Remove(playerInList);
+		Destroy(playerInList.gameObject);
+	}
+
+	void Error(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Error received: " + e.name + " " + e.data);
 	}
-	
-	void Close(SocketIOEvent e)
-	{	
+
+	void Close(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Close received: " + e.name + " " + e.data);
 	}
 
@@ -95,8 +98,7 @@ public class SyncController : MonoBehaviour {
 		return playerInList;
     }
 
-    public void MovePlayer(Vector2 position)
-    {
+    public void MovePlayer(Vector2 position) {
 		JSONObject data = new JSONObject();
 		JSONObject positionJson = new JSONObject();
 
@@ -109,8 +111,7 @@ public class SyncController : MonoBehaviour {
         socket.Emit("move", data);
     }
 
-    public void UseFireball(Vector2 position, Vector2 direction)
-    {
+    public void UseFireball(Vector2 position, Vector2 direction) {
         JSONObject data = new JSONObject();
         JSONObject positionJson = new JSONObject();
 
