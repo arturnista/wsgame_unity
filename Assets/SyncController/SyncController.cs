@@ -11,7 +11,7 @@ public class SyncController : MonoBehaviour {
     private MapController mapController;
 
 	private List<Player> playersList;
-    private List<Fireball> fireballsList;
+    private List<Spell> spellsList;
 	private SocketIOComponent socket;
 
 	private string playerId;
@@ -19,7 +19,7 @@ public class SyncController : MonoBehaviour {
 	public void Awake() {
         mapController = GameObject.FindObjectOfType<MapController>();
 		playersList = new List<Player>();
-        fireballsList = new List<Fireball>();
+        spellsList = new List<Spell>();
 		socket = GetComponent<SocketIOComponent>();
 	}
 
@@ -29,7 +29,7 @@ public class SyncController : MonoBehaviour {
         socket.On("map", CreateMap);
 
 		socket.On("sync", Sync);
-		socket.On("object_deleted", DeletePlayer);
+		socket.On("object_deleted", DeleteObject);
 
         socket.On("error", Error);
         socket.On("close", Close);
@@ -65,24 +65,30 @@ public class SyncController : MonoBehaviour {
         for (int i = 0; i < receivedSpellsList.Count; i++)
         {
             JSONObject spell = receivedSpellsList[i];
-			if(spell["type"].str == "fireball") {
-                Fireball fireballOnList = fireballsList.Find(x => x.id == spell["id"].str);
-                if (fireballOnList == null)
-                {
+            Spell spellOnList = spellsList.Find(x => x.id == spell["id"].str);
+            if (spellOnList == null) {
+                if(spell["type"].str == "fireball") {
                     GameObject go = Instantiate(fireballPrefab, Vector2.zero, Quaternion.identity) as GameObject;
-                    fireballOnList = go.GetComponent<Fireball>();
-                    fireballsList.Add(fireballOnList);
+                    spellOnList = go.GetComponent<Spell>();
                 }
-                fireballOnList.SetData(spell);
-			}
-
+                spellsList.Add(spellOnList);
+            }
+            spellOnList.SetData(spell);
         }
     }
 
-	void DeletePlayer(SocketIOEvent e) {
+	void DeleteObject(SocketIOEvent e) {
 		Player playerInList = playersList.Find(x => x.id == e.data["id"].str);
-		playersList.Remove(playerInList);
-		Destroy(playerInList.gameObject);
+		if(playerInList) {
+            playersList.Remove(playerInList);
+		    Destroy(playerInList.gameObject);
+        }
+
+		Spell spellOnList = spellsList.Find(x => x.id == e.data["id"].str);
+		if(spellOnList) {
+            spellsList.Remove(spellOnList);
+		    Destroy(spellOnList.gameObject);
+        }
 	}
 
 	void Error(SocketIOEvent e) {

@@ -7,12 +7,12 @@ public class Player : SyncObject {
 	private float life;
 
 	protected override void Update() {
-		Debug.Log("life: " + this.life);
+			
 	}
 
-    public override void SetData(JSONObject data) {
+	public override void SetData(JSONObject data) {
 		base.SetData(data);
 
-		life = data["life"].n;
-    }
+		this.life = data["life"].n;
+	}
 }

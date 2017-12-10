@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Fireball : SyncObject {
+public class Fireball : Spell {
 
 	
 }
