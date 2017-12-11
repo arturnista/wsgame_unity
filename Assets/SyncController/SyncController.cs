@@ -25,11 +25,11 @@ public class SyncController : MonoBehaviour {
 
     public void Start() {
 		socket.On("open", Open);
-        socket.On("created", PlayerCreated);
-        socket.On("map", CreateMap);
+        socket.On("player_create", PlayerCreated);
+        socket.On("map_create", CreateMap);
 
 		socket.On("sync", Sync);
-		socket.On("object_deleted", DeleteObject);
+		socket.On("gameobject_delete", DeleteObject);
 
         socket.On("error", Error);
         socket.On("close", Close);
@@ -114,7 +114,7 @@ public class SyncController : MonoBehaviour {
 		data.AddField("position", positionJson);
         data.AddField("id", this.playerId);
 
-        socket.Emit("move", data);
+        socket.Emit("player_move", data);
     }
 
     public void UseFireball(Vector2 position, Vector2 direction) {
@@ -133,6 +133,6 @@ public class SyncController : MonoBehaviour {
         data.AddField("position", positionJson);
         data.AddField("direction", directionJson);
 
-        socket.Emit("fireball", data);
+        socket.Emit("player_spell_fireball", data);
     }
 }
