@@ -6,6 +6,12 @@ public class Player : SyncObject {
 
 	private float life;
 
+	public float Life {
+		get {
+			return life;
+		}
+	}
+
 	protected override void Update() {
 			
 	}
@@ -15,4 +21,5 @@ public class Player : SyncObject {
 
 		this.life = data["life"].n;
 	}
+	
 }

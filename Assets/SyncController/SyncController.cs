@@ -26,9 +26,12 @@ public class SyncController : MonoBehaviour {
     public void Start() {
 		socket.On("open", Open);
         socket.On("player_create", PlayerCreated);
+
         socket.On("map_create", CreateMap);
+        socket.On("map_update", UpdateMap);
 
 		socket.On("sync", Sync);
+
 		socket.On("gameobject_delete", DeleteObject);
 
         socket.On("error", Error);
@@ -45,6 +48,10 @@ public class SyncController : MonoBehaviour {
 
     void CreateMap(SocketIOEvent e) {
         mapController.CreateMap(e.data);
+    }
+
+    void UpdateMap(SocketIOEvent e) {
+        mapController.UpdateMap(e.data);
     }
 
     void Sync(SocketIOEvent e) {
@@ -102,6 +109,12 @@ public class SyncController : MonoBehaviour {
 	public Player GetPlayer() {
         Player playerInList = playersList.Find(x => x.id == this.playerId);
 		return playerInList;
+    }
+
+    public void RestartGame() {
+        JSONObject data = new JSONObject();
+        data.AddField("id", this.playerId);
+        socket.Emit("game_restart", data);        
     }
 
     public void MovePlayer(Vector2 position) {
