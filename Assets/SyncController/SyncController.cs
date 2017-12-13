@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using SocketIO;
 
 public class SyncController : MonoBehaviour {
@@ -14,17 +15,48 @@ public class SyncController : MonoBehaviour {
     private List<Spell> spellsList;
 	private SocketIOComponent socket;
 
+    private string roomName;
+
 	private string playerId;
 
 	public void Awake() {
-        mapController = GameObject.FindObjectOfType<MapController>();
+        DontDestroyOnLoad(this.gameObject);
+
 		playersList = new List<Player>();
         spellsList = new List<Spell>();
 		socket = GetComponent<SocketIOComponent>();
+
+        roomName = "";
 	}
 
     public void Start() {
 		socket.On("open", Open);
+
+		socket.On("user_info", DefineUserInfo);
+
+		socket.On("game_will_start", GameWillStart);
+    }
+
+	void Open(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Open received: " + e.name + " " + e.data);
+	}
+
+	void DefineUserInfo(SocketIOEvent e) {
+		Debug.Log("[SocketIO] User created");
+	}
+
+    void GameWillStart(SocketIOEvent e) {
+        SceneManager.LoadScene("_MainGame");
+         
+        SceneManager.activeSceneChanged += OnChangeLevel;
+    }
+
+    private void OnChangeLevel(Scene arg0, Scene arg1) {
+        mapController = GameObject.FindObjectOfType<MapController>();
+        this.AddGameListeners();
+    }
+
+    void AddGameListeners() {
         socket.On("player_create", PlayerCreated);
 
         socket.On("map_create", CreateMap);
@@ -38,11 +70,8 @@ public class SyncController : MonoBehaviour {
         socket.On("close", Close);
     }
 
-	void Open(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Open received: " + e.name + " " + e.data);
-	}
-
     void PlayerCreated(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Player created");
         this.playerId = e.data["id"].str;
     }
 
@@ -111,10 +140,29 @@ public class SyncController : MonoBehaviour {
 		return playerInList;
     }
 
-    public void RestartGame() {
+    public void SetRoomName(string name) {
+        Debug.Log(name);
+        this.roomName = name;
+    }
+
+    public void CreateGame() {
         JSONObject data = new JSONObject();
-        data.AddField("id", this.playerId);
-        socket.Emit("game_restart", data);        
+        data.AddField("name", roomName);
+        socket.Emit("room_create", data); 
+    }
+
+    public void JoinGame() {
+        JSONObject data = new JSONObject();
+        data.AddField("name", roomName);
+        socket.Emit("room_join", data);       
+    }
+
+    public void Ready() {
+        socket.Emit("user_ready");        
+    }
+
+    public void StartGame() {
+        socket.Emit("game_start");        
     }
 
     public void MovePlayer(Vector2 position) {
