@@ -141,7 +141,6 @@ public class SyncController : MonoBehaviour {
     }
 
     public void SetRoomName(string name) {
-        Debug.Log(name);
         this.roomName = name;
     }
 
