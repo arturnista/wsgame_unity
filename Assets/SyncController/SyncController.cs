@@ -9,13 +9,18 @@ public class SyncController : MonoBehaviour {
 	public GameObject playerPrefab;
     public GameObject fireballPrefab;
 
+    private UIController uiController;
+
     private MapController mapController;
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
 	private SocketIOComponent socket;
 
+    public bool userHasJoinedRoom = false;
+
     private string roomName;
+    private bool isGameRunning = false;
 
 	private string playerId;
 
@@ -31,10 +36,36 @@ public class SyncController : MonoBehaviour {
 
     public void Start() {
 		socket.On("open", Open);
+        socket.On("error", Error);
+        socket.On("close", Close);
 
 		socket.On("user_info", DefineUserInfo);
+        socket.On("user_joined_room", UserJoinedRoom);
 
 		socket.On("game_will_start", GameWillStart);
+		socket.On("game_start", GameStart);
+		socket.On("game_will_end", GameWillEnd);
+		socket.On("game_end", GameEnd);
+
+        socket.On("player_create", PlayerCreated);
+
+        socket.On("map_create", CreateMap);
+        socket.On("map_update", UpdateMap);
+
+		socket.On("sync", Sync);
+
+		socket.On("gameobject_delete", DeleteObject);
+
+        SceneManager.activeSceneChanged += OnChangeLevel;
+    }
+
+    private void OnChangeLevel(Scene origin, Scene current) {
+        if(current.name == "Game") {
+            this.isGameRunning = true;
+            mapController = GameObject.FindObjectOfType<MapController>();
+        }
+
+        uiController = GameObject.FindObjectOfType<UIController>();
     }
 
 	void Open(SocketIOEvent e) {
@@ -45,29 +76,29 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] User created");
 	}
 
+    void UserJoinedRoom(SocketIOEvent e) {
+		Debug.Log("[SocketIO] User joined room");
+        uiController.UserJoinedRoom();
+        userHasJoinedRoom = true;
+    }
+
     void GameWillStart(SocketIOEvent e) {
-        SceneManager.LoadScene("_MainGame");
-         
-        SceneManager.activeSceneChanged += OnChangeLevel;
+        SceneManager.LoadScene("Game");    
     }
 
-    private void OnChangeLevel(Scene arg0, Scene arg1) {
-        mapController = GameObject.FindObjectOfType<MapController>();
-        this.AddGameListeners();
+    void GameStart(SocketIOEvent e) {
+
     }
 
-    void AddGameListeners() {
-        socket.On("player_create", PlayerCreated);
+    void GameWillEnd(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Game finished");
 
-        socket.On("map_create", CreateMap);
-        socket.On("map_update", UpdateMap);
+    }
 
-		socket.On("sync", Sync);
-
-		socket.On("gameobject_delete", DeleteObject);
-
-        socket.On("error", Error);
-        socket.On("close", Close);
+    void GameEnd(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Game ended");
+        this.isGameRunning = false;
+        SceneManager.LoadScene("Menu");    
     }
 
     void PlayerCreated(SocketIOEvent e) {
@@ -80,10 +111,14 @@ public class SyncController : MonoBehaviour {
     }
 
     void UpdateMap(SocketIOEvent e) {
+        if(!isGameRunning) return;
+        
         mapController.UpdateMap(e.data);
     }
 
     void Sync(SocketIOEvent e) {
+        if(!isGameRunning) return;
+
 		List<JSONObject> receivedPlayersList = e.data["players"].list;
 		for (int i = 0; i < receivedPlayersList.Count; i++) {
 			JSONObject player = receivedPlayersList[i];
@@ -114,6 +149,8 @@ public class SyncController : MonoBehaviour {
     }
 
 	void DeleteObject(SocketIOEvent e) {
+        if(!isGameRunning) return;
+        
 		Player playerInList = playersList.Find(x => x.id == e.data["id"].str);
 		if(playerInList) {
             playersList.Remove(playerInList);
@@ -157,14 +194,16 @@ public class SyncController : MonoBehaviour {
     }
 
     public void Ready() {
-        socket.Emit("user_ready");        
+        socket.Emit("user_ready");
     }
 
     public void StartGame() {
-        socket.Emit("game_start");        
+        socket.Emit("game_start");
     }
 
     public void MovePlayer(Vector2 position) {
+        if(!isGameRunning) return;
+
 		JSONObject data = new JSONObject();
 		JSONObject positionJson = new JSONObject();
 
@@ -178,6 +217,8 @@ public class SyncController : MonoBehaviour {
     }
 
     public void UseFireball(Vector2 position, Vector2 direction) {
+        if(!isGameRunning) return;
+        
         JSONObject data = new JSONObject();
         JSONObject positionJson = new JSONObject();
 
