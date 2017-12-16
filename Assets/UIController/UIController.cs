@@ -14,6 +14,8 @@ public class UIController : MonoBehaviour {
 	private Button readyButton;
 	private Button startGameButton;
 	private InputField roomNameInput;
+	private Text usersReadyText;
+	private Text usersWaitingText;
 
 	private Player player;
 	private Text playerInfoText;
@@ -27,10 +29,12 @@ public class UIController : MonoBehaviour {
 			joinGameButton = GameObject.Find("JoinGameButton").GetComponent<Button>();
 			readyButton = GameObject.Find("ReadyButton").GetComponent<Button>();
 			startGameButton = GameObject.Find("StartGameButton").GetComponent<Button>();
+			usersReadyText = GameObject.Find("UsersReadyText").GetComponent<Text>();
+			usersWaitingText = GameObject.Find("UsersWaitingText").GetComponent<Text>();
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
-			readyButton.onClick.AddListener(syncController.Ready);
+			readyButton.onClick.AddListener(this.onReadyClick);
 			startGameButton.onClick.AddListener(syncController.StartGame);
 
 			roomNameInput.gameObject.SetActive(true);
@@ -40,7 +44,7 @@ public class UIController : MonoBehaviour {
 			readyButton.gameObject.SetActive(false);
 			startGameButton.gameObject.SetActive(false);
 
-			if(syncController.userHasJoinedRoom) this.UserJoinedRoom();
+			if(syncController.isUserInRoom) this.MyUserJoinedRoom();
 		}
 
 		if(isGameScene) playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
@@ -64,11 +68,22 @@ public class UIController : MonoBehaviour {
 		
 	}
 
+	void onReadyClick() {
+		syncController.ToggleReady();
+		Text text = readyButton.GetComponentInChildren<Text>();
+
+		if(syncController.isUserReady) {
+			text.text = "Wait";
+		} else {
+			text.text = "Ready";			
+		}
+	}
+
 	public void OnRoomNameChange() {
 		syncController.SetRoomName(roomNameInput.text);
 	}
 
-	public void UserJoinedRoom() {
+	public void MyUserJoinedRoom() {
 		roomNameInput.gameObject.SetActive(false);
 		createGameButton.gameObject.SetActive(false);
 		joinGameButton.gameObject.SetActive(false);
@@ -76,4 +91,14 @@ public class UIController : MonoBehaviour {
 		readyButton.gameObject.SetActive(true);
 		startGameButton.gameObject.SetActive(true);
 	}
+
+	public void UserJoinedRoom(int number) {
+		
+	}
+
+	public void UserStatusUpdate(int ready, int waiting) {
+		usersReadyText.text = ready.ToString();
+		usersWaitingText.text = waiting.ToString();
+	}
+
 }

@@ -17,7 +17,11 @@ public class SyncController : MonoBehaviour {
     private List<Spell> spellsList;
 	private SocketIOComponent socket;
 
-    public bool userHasJoinedRoom = false;
+    public bool isUserInRoom = false;
+    public bool isUserReady = false;
+    public int usersInRoom = 0;
+    public int usersReady = 0;
+    public int usersWaiting = 0;
 
     private string roomName;
     private bool isGameRunning = false;
@@ -39,8 +43,12 @@ public class SyncController : MonoBehaviour {
         socket.On("error", Error);
         socket.On("close", Close);
 
-		socket.On("user_info", DefineUserInfo);
-        socket.On("user_joined_room", UserJoinedRoom);
+		socket.On("myuser_info", DefineMyUserInfo);
+        socket.On("myuser_joined_room", MyUserJoinedRoom);
+
+        // socket.On("user_joined_room", UserJoinedRoom);
+        // socket.On("user_ready", UserReady);
+        // socket.On("user_waiting", UserWaiting);
 
 		socket.On("game_will_start", GameWillStart);
 		socket.On("game_start", GameStart);
@@ -72,14 +80,22 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] Open received: " + e.name + " " + e.data);
 	}
 
-	void DefineUserInfo(SocketIOEvent e) {
+	void Error(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Error received: " + e.name + " " + e.data);
+	}
+
+	void Close(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Close received: " + e.name + " " + e.data);
+	}
+
+	void DefineMyUserInfo(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User created");
 	}
 
-    void UserJoinedRoom(SocketIOEvent e) {
+    void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
-        uiController.UserJoinedRoom();
-        userHasJoinedRoom = true;
+        uiController.MyUserJoinedRoom();
+        isUserInRoom = true;
     }
 
     void GameWillStart(SocketIOEvent e) {
@@ -87,6 +103,7 @@ public class SyncController : MonoBehaviour {
     }
 
     void GameStart(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Game start");
 
     }
 
@@ -164,14 +181,6 @@ public class SyncController : MonoBehaviour {
         }
 	}
 
-	void Error(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Error received: " + e.name + " " + e.data);
-	}
-
-	void Close(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Close received: " + e.name + " " + e.data);
-	}
-
 	public Player GetPlayer() {
         Player playerInList = playersList.Find(x => x.id == this.playerId);
 		return playerInList;
@@ -193,8 +202,13 @@ public class SyncController : MonoBehaviour {
         socket.Emit("room_join", data);       
     }
 
-    public void Ready() {
-        socket.Emit("user_ready");
+    public void ToggleReady() {
+        if(isUserReady) {
+            socket.Emit("user_waiting");
+        } else {
+            socket.Emit("user_ready");            
+        }
+        isUserReady = !isUserReady;
     }
 
     public void StartGame() {
