@@ -20,9 +20,9 @@ public class MapController : MonoBehaviour {
 	}
 
 	void Update () {
-		// this.size -= decreasePerSecond * Time.deltaTime;
-		// this.halfSize = size / 2;
-		// ground.localScale = new Vector2 (this.size, this.size);
+		this.size -= decreasePerSecond * Time.deltaTime;
+		this.halfSize = size / 2;
+		ground.localScale = new Vector2 (this.size, this.size);
 	}
 
 	public void UpdateMap (JSONObject data) {
