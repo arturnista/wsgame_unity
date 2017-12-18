@@ -20,9 +20,9 @@ public class MapController : MonoBehaviour {
 	}
 
 	void Update () {
-		this.size -= decreasePerSecond * Time.deltaTime;
-		this.halfSize = size / 2;
-		ground.localScale = new Vector2 (this.size, this.size);
+		// this.size -= decreasePerSecond * Time.deltaTime;
+		// this.halfSize = size / 2;
+		// ground.localScale = new Vector2 (this.size, this.size);
 	}
 
 	public void UpdateMap (JSONObject data) {
@@ -35,19 +35,6 @@ public class MapController : MonoBehaviour {
 		ground.position = new Vector2 (xMapPos, yMapPos);
 
 		this.decreasePerSecond = data["decreasePerSecond"].n;
-
-		List<JSONObject> obstaclesReceived = data["obstacles"].list;
-		for (int i = 0; i < obstaclesReceived.Count; i++) {
-			float xPos = obstaclesReceived[i]["position"]["x"].n;
-			float yPos = obstaclesReceived[i]["position"]["y"].n;
-			Vector3 pos = new Vector2 (xPos, yPos);
-
-			float obsSize = obstaclesReceived[i]["collider"]["size"].n;
-
-			GameObject obs = Instantiate (obstaclePrefab, pos, Quaternion.identity) as GameObject;
-			obs.transform.parent = obstaclesParent;
-			obs.transform.localScale = new Vector2 (obsSize, obsSize);
-		}
 
 		Vector3 cameraPosition = ground.position;
 		cameraPosition.z = -10f;

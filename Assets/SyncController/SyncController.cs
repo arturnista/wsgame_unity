@@ -46,12 +46,13 @@ public class SyncController : MonoBehaviour {
 		socket.On("myuser_info", DefineMyUserInfo);
         socket.On("myuser_joined_room", MyUserJoinedRoom);
 
-        // socket.On("user_joined_room", UserJoinedRoom);
-        // socket.On("user_ready", UserReady);
-        // socket.On("user_waiting", UserWaiting);
+        socket.On("user_joined_room", UserJoinedRoom);
+        socket.On("user_ready", UserReady);
+        socket.On("user_waiting", UserWaiting);
 
 		socket.On("game_will_start", GameWillStart);
 		socket.On("game_start", GameStart);
+        
 		socket.On("game_will_end", GameWillEnd);
 		socket.On("game_end", GameEnd);
 
@@ -98,7 +99,18 @@ public class SyncController : MonoBehaviour {
         isUserInRoom = true;
     }
 
+    void UserJoinedRoom(SocketIOEvent e) {
+        
+    }
+    void UserReady(SocketIOEvent e) {
+        
+    }
+    void UserWaiting(SocketIOEvent e) {
+        
+    }
+
     void GameWillStart(SocketIOEvent e) {
+		Debug.Log("[SocketIO] Game will start");
         SceneManager.LoadScene("Game");    
     }
 
@@ -108,7 +120,7 @@ public class SyncController : MonoBehaviour {
     }
 
     void GameWillEnd(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Game finished");
+		Debug.Log("[SocketIO] Game will end");
 
     }
 
@@ -136,16 +148,16 @@ public class SyncController : MonoBehaviour {
     void Sync(SocketIOEvent e) {
         if(!isGameRunning) return;
 
-		List<JSONObject> receivedPlayersList = e.data["players"].list;
-		for (int i = 0; i < receivedPlayersList.Count; i++) {
-			JSONObject player = receivedPlayersList[i];
+        List<JSONObject> receivedPlayersList = e.data["players"].list;
+        for (int i = 0; i < receivedPlayersList.Count; i++) {
+            JSONObject player = receivedPlayersList[i];
 
-			Player playerInList = playersList.Find(x => x.id == player["id"].str);
+            Player playerInList = playersList.Find(x => x.id == player["id"].str);
             if(playerInList == null) {
                 GameObject go = Instantiate(playerPrefab, Vector2.zero, Quaternion.identity) as GameObject;
-				playerInList = go.GetComponent<Player>();
-				playersList.Add(playerInList);
-			}
+                playerInList = go.GetComponent<Player>();
+                playersList.Add(playerInList);
+            }
             playerInList.SetData( player );
         }
 
@@ -182,8 +194,8 @@ public class SyncController : MonoBehaviour {
 	}
 
 	public Player GetPlayer() {
-        Player playerInList = playersList.Find(x => x.id == this.playerId);
-		return playerInList;
+        Player pp = playersList.Find(x => x.id == this.playerId);
+		return pp;
     }
 
     public void SetRoomName(string name) {

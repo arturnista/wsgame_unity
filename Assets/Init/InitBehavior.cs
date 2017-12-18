@@ -5,11 +5,15 @@ using UnityEngine;
 
 public class InitBehavior : MonoBehaviour {
 
+	private float timePassed;
 	void Start () {
-		SceneManager.LoadScene("Menu");    
+		// SceneManager.LoadScene("Menu");    
 	}
 	
 	void Update () {
-		
+		timePassed += Time.deltaTime;
+		if(timePassed > 2f) {
+			SceneManager.LoadScene("Menu");    
+		}
 	}
 }

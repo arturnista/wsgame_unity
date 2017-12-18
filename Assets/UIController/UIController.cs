@@ -45,9 +45,10 @@ public class UIController : MonoBehaviour {
 			startGameButton.gameObject.SetActive(false);
 
 			if(syncController.isUserInRoom) this.MyUserJoinedRoom();
-		}
 
-		if(isGameScene) playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
+		} else {
+			playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
+		}
 	}
 	
 	// Update is called once per frame

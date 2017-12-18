@@ -26,6 +26,7 @@ public class ActionController : MonoBehaviour {
 	void Update () {
 		if(player == null) {
 			player = syncController.GetPlayer();
+			return;
 		}
 		if(Input.GetKeyDown(KeyCode.Q)) {
 			nextAction = Action.Fireball;
