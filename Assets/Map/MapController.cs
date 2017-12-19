@@ -22,43 +22,37 @@ public class MapController : MonoBehaviour {
 	void Update () {
 		this.size -= decreasePerSecond * Time.deltaTime;
 		this.halfSize = size / 2;
-		ground.localScale = new Vector2 (this.size, this.size);
+		ground.localScale = new Vector3 (this.size, 10, this.size);
 	}
 
 	public void UpdateMap (JSONObject data) {
 		this.size = data["size"].n;
 		this.halfSize = size / 2;
-		ground.localScale = new Vector2 (this.size, this.size);
+		ground.localScale = new Vector3 (this.size, 10, this.size);
 
 		float xMapPos = data["position"]["x"].n;
 		float yMapPos = data["position"]["y"].n;
-		ground.position = new Vector2 (xMapPos, yMapPos);
+		ground.position = new Vector3 (xMapPos, yMapPos);
 
 		this.decreasePerSecond = data["decreasePerSecond"].n;
-
-		Vector3 cameraPosition = ground.position;
-		cameraPosition.z = -10f;
-
-		Camera.main.transform.position = cameraPosition;
-		Camera.main.orthographicSize = Mathf.Max(this.halfSize * 1.3f, 200);
 	}
 
 	public void CreateMap (JSONObject data) {
 		this.size = data["size"].n;
 		this.halfSize = size / 2;
-		ground.localScale = new Vector2 (this.size, this.size);
+		ground.localScale = new Vector3 (this.size, 10, this.size);
 
 		this.decreasePerSecond = data["decreasePerSecond"].n;
 
 		float xMapPos = data["position"]["x"].n;
 		float yMapPos = data["position"]["y"].n;
-		ground.position = new Vector2 (xMapPos, yMapPos);
+		ground.position = new Vector3 (xMapPos, 10, yMapPos);
 
 		List<JSONObject> obstaclesReceived = data["obstacles"].list;
 		for (int i = 0; i < obstaclesReceived.Count; i++) {
 			float xPos = obstaclesReceived[i]["position"]["x"].n;
 			float yPos = obstaclesReceived[i]["position"]["y"].n;
-			Vector3 pos = new Vector2 (xPos, yPos);
+			Vector3 pos = new Vector3 (xPos, 10, yPos);
 
 			float obsSize = obstaclesReceived[i]["collider"]["size"].n;
 
@@ -67,10 +61,5 @@ public class MapController : MonoBehaviour {
 			obs.transform.localScale = new Vector2 (obsSize, obsSize);
 		}
 
-		Vector3 cameraPosition = ground.position;
-		cameraPosition.z = -10f;
-
-		Camera.main.transform.position = cameraPosition;
-		Camera.main.orthographicSize = Mathf.Max(this.halfSize * 1.3f, 200);
 	}
 }
