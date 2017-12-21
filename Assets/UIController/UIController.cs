@@ -16,6 +16,7 @@ public class UIController : MonoBehaviour {
 	private InputField roomNameInput;
 	private Text usersReadyText;
 	private Text usersWaitingText;
+	private Image playerColorImage;
 
 	private Player player;
 	private Text playerInfoText;
@@ -31,6 +32,7 @@ public class UIController : MonoBehaviour {
 			startGameButton = GameObject.Find("StartGameButton").GetComponent<Button>();
 			usersReadyText = GameObject.Find("UsersReadyText").GetComponent<Text>();
 			usersWaitingText = GameObject.Find("UsersWaitingText").GetComponent<Text>();
+			playerColorImage = GameObject.Find("PlayerColorImage").GetComponent<Image>();
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
@@ -43,6 +45,7 @@ public class UIController : MonoBehaviour {
 
 			readyButton.gameObject.SetActive(false);
 			startGameButton.gameObject.SetActive(false);
+			playerColorImage.gameObject.SetActive(false);
 
 			if(syncController.isUserInRoom) this.MyUserJoinedRoom();
 
@@ -80,6 +83,10 @@ public class UIController : MonoBehaviour {
 		}
 	}
 
+	public void SetPlayerColor(Color color) {
+		playerColorImage.color = color;
+	}
+
 	public void OnRoomNameChange() {
 		syncController.SetRoomName(roomNameInput.text);
 	}
@@ -91,10 +98,15 @@ public class UIController : MonoBehaviour {
 
 		readyButton.gameObject.SetActive(true);
 		startGameButton.gameObject.SetActive(true);
+		playerColorImage.gameObject.SetActive(true);
 	}
 
 	public void UserJoinedRoom(int number) {
 		
+	}
+
+	public void ExitGame() {
+		Application.Quit();
 	}
 
 	public void UserStatusUpdate(int ready, int waiting) {

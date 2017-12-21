@@ -69,12 +69,15 @@ public class SyncController : MonoBehaviour {
     }
 
     private void OnChangeLevel(Scene origin, Scene current) {
+        uiController = GameObject.FindObjectOfType<UIController>();
+        
         if(current.name == "Game") {
             this.isGameRunning = true;
             mapController = GameObject.FindObjectOfType<MapController>();
+        } else if(current.name == "Menu") {
+            uiController.UserStatusUpdate(0, 0);
         }
 
-        uiController = GameObject.FindObjectOfType<UIController>();
     }
 
 	void Open(SocketIOEvent e) {
@@ -96,17 +99,28 @@ public class SyncController : MonoBehaviour {
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
         uiController.MyUserJoinedRoom();
+        
+		Color color;
+		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out color);
+        uiController.SetPlayerColor(color);
+        
         isUserInRoom = true;
     }
 
     void UserJoinedRoom(SocketIOEvent e) {
-        
+        usersWaiting = (int) e.data["usersWaiting"].n;
+        usersReady = (int) e.data["usersReady"].n;
+        uiController.UserStatusUpdate(usersReady, usersWaiting);
     }
     void UserReady(SocketIOEvent e) {
-        
+        usersReady++;
+        usersWaiting--;
+        uiController.UserStatusUpdate(usersReady, usersWaiting);
     }
     void UserWaiting(SocketIOEvent e) {
-        
+        usersReady--;
+        usersWaiting++;
+        uiController.UserStatusUpdate(usersReady, usersWaiting);
     }
 
     void GameWillStart(SocketIOEvent e) {

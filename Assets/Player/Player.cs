@@ -8,6 +8,8 @@ public class Player : SyncObject {
 	private float knockback;
 	private string status;
 
+	private SpriteRenderer spriteRenderer;
+
 	public float Life {
 		get {
 			return life;
@@ -26,6 +28,10 @@ public class Player : SyncObject {
 		}
 	}
 
+	void Awake() {
+		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+	}
+
 	protected override void Update() {
 			
 	}
@@ -36,6 +42,9 @@ public class Player : SyncObject {
 		this.life = data["life"].n;
 		this.knockback = data["knockbackValue"].n;
 		this.status = data["status"].str;
+		Color color;
+		ColorUtility.TryParseHtmlString(data["color"].str, out color);
+		this.spriteRenderer.color = color;
 	}
 	
 }

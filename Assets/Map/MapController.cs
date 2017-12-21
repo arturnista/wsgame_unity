@@ -35,12 +35,6 @@ public class MapController : MonoBehaviour {
 		ground.position = new Vector2 (xMapPos, yMapPos);
 
 		this.decreasePerSecond = data["decreasePerSecond"].n;
-
-		Vector3 cameraPosition = ground.position;
-		cameraPosition.z = -10f;
-
-		Camera.main.transform.position = cameraPosition;
-		Camera.main.orthographicSize = Mathf.Max(this.halfSize * 1.3f, 200);
 	}
 
 	public void CreateMap (JSONObject data) {
