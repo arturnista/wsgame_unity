@@ -25,15 +25,15 @@ public class SyncObject : MonoBehaviour
 
         float xPos = data["position"]["x"].n;
         float yPos = data["position"]["y"].n;
-        transform.position = new Vector2(xPos, yPos);
+        transform.position = new Vector3(xPos, 2, yPos);
 
         if(data.HasField("velocity")) {
             float xVel = data["velocity"]["x"].n;
             float yVel = data["velocity"]["y"].n;
-            this.velocity = new Vector2(xVel, yVel);
+            this.velocity = new Vector3(xVel, 1, yVel);
         }
 
         float size = data["collider"]["size"].n;
-        transform.localScale = new Vector2(size, size);
+        transform.localScale = new Vector3(size, 1, size);
     }
 }

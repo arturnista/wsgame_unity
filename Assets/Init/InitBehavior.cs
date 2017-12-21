@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class InitBehavior : MonoBehaviour {
 
+	public float timeToLoad = .5f;
+
 	private float timePassed;
 	void Start () {
 		// SceneManager.LoadScene("Menu");    
@@ -12,7 +14,7 @@ public class InitBehavior : MonoBehaviour {
 	
 	void Update () {
 		timePassed += Time.deltaTime;
-		if(timePassed > 2f) {
+		if(timePassed > timeToLoad) {
 			SceneManager.LoadScene("Menu");    
 		}
 	}
