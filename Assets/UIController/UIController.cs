@@ -18,6 +18,9 @@ public class UIController : MonoBehaviour {
 	private Text usersWaitingText;
 	private Image playerColorImage;
 
+	private GameObject selectRoomCanvas;
+	private GameObject roomCanvas;
+
 	private Player player;
 	private Text playerInfoText;
 
@@ -25,6 +28,9 @@ public class UIController : MonoBehaviour {
 		syncController = GameObject.FindObjectOfType<SyncController>();
 
 		if(!isGameScene) {
+			selectRoomCanvas = GameObject.Find("SelectRoomCanvas");
+			roomCanvas = GameObject.Find("RoomCanvas");
+
 			roomNameInput = GameObject.Find("RoomNameInput").GetComponent<InputField>();
 			createGameButton = GameObject.Find("CreateGameButton").GetComponent<Button>();
 			joinGameButton = GameObject.Find("JoinGameButton").GetComponent<Button>();
@@ -39,15 +45,10 @@ public class UIController : MonoBehaviour {
 			readyButton.onClick.AddListener(this.onReadyClick);
 			startGameButton.onClick.AddListener(syncController.StartGame);
 
-			roomNameInput.gameObject.SetActive(true);
-			createGameButton.gameObject.SetActive(true);
-			joinGameButton.gameObject.SetActive(true);
+			selectRoomCanvas.SetActive(true);
+			roomCanvas.SetActive(false);
 
-			readyButton.gameObject.SetActive(false);
-			startGameButton.gameObject.SetActive(false);
-			playerColorImage.gameObject.SetActive(false);
-
-			if(syncController.isUserInRoom) this.MyUserJoinedRoom();
+			if(syncController.isUserInRoom) this.MyUserJoinedRoom(syncController.GetRoomName(), syncController.isUserRoomOwner);
 
 		} else {
 			playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
@@ -91,14 +92,11 @@ public class UIController : MonoBehaviour {
 		syncController.SetRoomName(roomNameInput.text);
 	}
 
-	public void MyUserJoinedRoom() {
-		roomNameInput.gameObject.SetActive(false);
-		createGameButton.gameObject.SetActive(false);
-		joinGameButton.gameObject.SetActive(false);
+	public void MyUserJoinedRoom(string roomName, bool isOwner) {
+		selectRoomCanvas.SetActive(false);
+		roomCanvas.SetActive(true);
 
-		readyButton.gameObject.SetActive(true);
-		startGameButton.gameObject.SetActive(true);
-		playerColorImage.gameObject.SetActive(true);
+		if(!isOwner) startGameButton.gameObject.SetActive(false);
 	}
 
 	public void UserJoinedRoom(int number) {
@@ -110,8 +108,8 @@ public class UIController : MonoBehaviour {
 	}
 
 	public void UserStatusUpdate(int ready, int waiting) {
-		usersReadyText.text = ready.ToString();
-		usersWaitingText.text = waiting.ToString();
+		usersReadyText.text = ready.ToString() + " Ready";
+		usersWaitingText.text =  "Waiting " + waiting.ToString();
 	}
 
 }

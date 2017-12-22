@@ -18,6 +18,7 @@ public class SyncController : MonoBehaviour {
 	private SocketIOComponent socket;
 
     public bool isUserInRoom = false;
+    public bool isUserRoomOwner = false;
     public bool isUserReady = false;
     public int usersInRoom = 0;
     public int usersReady = 0;
@@ -27,6 +28,7 @@ public class SyncController : MonoBehaviour {
     private bool isGameRunning = false;
 
 	private string playerId;
+	private string userId;
 
 	public void Awake() {
         DontDestroyOnLoad(this.gameObject);
@@ -75,7 +77,7 @@ public class SyncController : MonoBehaviour {
             this.isGameRunning = true;
             mapController = GameObject.FindObjectOfType<MapController>();
         } else if(current.name == "Menu") {
-            uiController.UserStatusUpdate(0, 0);
+            uiController.UserStatusUpdate(usersReady, usersWaiting);
         }
 
     }
@@ -94,11 +96,16 @@ public class SyncController : MonoBehaviour {
 
 	void DefineMyUserInfo(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User created");
+        this.userId = e.data["id"].str;
 	}
 
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
-        uiController.MyUserJoinedRoom();
+        Debug.Log(this.userId);
+        Debug.Log(e.data["room"]["owner"]["id"].str);
+        this.isUserRoomOwner = this.userId == e.data["room"]["owner"]["id"].str;
+        this.roomName = e.data["room"]["name"].str;
+        uiController.MyUserJoinedRoom(this.roomName, this.isUserRoomOwner);
         
 		Color color;
 		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out color);
@@ -108,6 +115,7 @@ public class SyncController : MonoBehaviour {
     }
 
     void UserJoinedRoom(SocketIOEvent e) {
+        usersInRoom = (int) e.data["usersNumber"].n;
         usersWaiting = (int) e.data["usersWaiting"].n;
         usersReady = (int) e.data["usersReady"].n;
         uiController.UserStatusUpdate(usersReady, usersWaiting);
@@ -142,6 +150,10 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] Game ended");
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
+
+        this.usersWaiting = this.usersInRoom;
+        this.usersReady = 0;
+        this.isUserReady = false;
     }
 
     void PlayerCreated(SocketIOEvent e) {
@@ -214,6 +226,10 @@ public class SyncController : MonoBehaviour {
 
     public void SetRoomName(string name) {
         this.roomName = name;
+    }
+
+    public string GetRoomName() {
+        return this.roomName;
     }
 
     public void CreateGame() {
