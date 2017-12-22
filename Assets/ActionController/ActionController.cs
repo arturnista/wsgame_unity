@@ -14,16 +14,21 @@ public class ActionController : MonoBehaviour {
 	private Action nextAction;
 
 	private GameObject moveSignal;
+	private float screenWidthProp;
 
 	void Awake () {
 		moveSignal = GameObject.Find("MoveSignal");
 		syncController = GameObject.FindObjectOfType<SyncController>();
 		nextAction = Action.Move;
-		transform.localScale = new Vector2(Screen.width, Screen.height);
+
+		screenWidthProp = Screen.width * 1f / Screen.height;
 	}
 
 	// Update is called once per frame
 	void Update () {
+		float cameraSize = Camera.main.orthographicSize * 2;
+		transform.localScale = new Vector2(cameraSize * screenWidthProp, cameraSize);
+
 		if(player == null) {
 			player = syncController.GetPlayer();
 			return;

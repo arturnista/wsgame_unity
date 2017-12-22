@@ -67,4 +67,8 @@ public class MapController : MonoBehaviour {
 		Camera.main.transform.position = cameraPosition;
 		Camera.main.orthographicSize = Mathf.Max(this.halfSize * 1.3f, 200);
 	}
+
+	public Vector3 GetPosition() {
+		return ground.position;
+	}
 }
