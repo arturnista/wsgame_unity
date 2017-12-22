@@ -23,6 +23,10 @@ public class UIController : MonoBehaviour {
 
 	private Player player;
 	private Text playerInfoText;
+	private Image healthbarImage;
+
+	private GameObject winnerCanvas;
+	private GameObject loserCanvas;
 
 	void Awake () {
 		syncController = GameObject.FindObjectOfType<SyncController>();
@@ -52,6 +56,9 @@ public class UIController : MonoBehaviour {
 
 		} else {
 			playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
+			healthbarImage = GameObject.Find("HealthbarImage").GetComponent<Image>();
+			winnerCanvas = transform.Find("WinnerCanvas").gameObject;
+			loserCanvas = transform.Find("LoserCanvas").gameObject;
 		}
 	}
 	
@@ -64,8 +71,12 @@ public class UIController : MonoBehaviour {
 				player = syncController.GetPlayer();
 			} else {
 				if(player.Status == "alive") {
-					playerInfoText.text = "Life: " + player.Life + "\nKnockback: " + player.Knockback;
+					Vector3 scl = healthbarImage.rectTransform.localScale;
+					scl.x = player.Life / 100f;
+					healthbarImage.rectTransform.localScale = scl;
+					playerInfoText.text = "Knockback " + player.Knockback;
 				} else {
+					healthbarImage.rectTransform.localScale = Vector3.zero;
 					playerInfoText.text = "U IS DED";
 				}
 			}
@@ -101,6 +112,11 @@ public class UIController : MonoBehaviour {
 
 	public void UserJoinedRoom(int number) {
 		
+	}
+
+	public void EndGame(bool win) {
+		if(win) winnerCanvas.SetActive(true);
+		else loserCanvas.SetActive(true);
 	}
 
 	public void ExitGame() {

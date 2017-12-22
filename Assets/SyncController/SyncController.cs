@@ -23,6 +23,7 @@ public class SyncController : MonoBehaviour {
     public int usersInRoom = 0;
     public int usersReady = 0;
     public int usersWaiting = 0;
+    private Color userColor;
 
     private string roomName;
     private bool isGameRunning = false;
@@ -78,6 +79,7 @@ public class SyncController : MonoBehaviour {
             mapController = GameObject.FindObjectOfType<MapController>();
         } else if(current.name == "Menu") {
             uiController.UserStatusUpdate(usersReady, usersWaiting);
+            if(userColor != null) uiController.SetPlayerColor(userColor);
         }
 
     }
@@ -101,15 +103,12 @@ public class SyncController : MonoBehaviour {
 
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
-        Debug.Log(this.userId);
-        Debug.Log(e.data["room"]["owner"]["id"].str);
         this.isUserRoomOwner = this.userId == e.data["room"]["owner"]["id"].str;
         this.roomName = e.data["room"]["name"].str;
         uiController.MyUserJoinedRoom(this.roomName, this.isUserRoomOwner);
         
-		Color color;
-		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out color);
-        uiController.SetPlayerColor(color);
+		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out this.userColor);
+        uiController.SetPlayerColor(userColor);
         
         isUserInRoom = true;
     }
@@ -143,7 +142,9 @@ public class SyncController : MonoBehaviour {
 
     void GameWillEnd(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game will end");
-
+        
+        bool winner = this.playerId == e.data["winner"]["id"].str;
+        uiController.EndGame(winner);
     }
 
     void GameEnd(SocketIOEvent e) {
@@ -291,5 +292,14 @@ public class SyncController : MonoBehaviour {
         data.AddField("direction", directionJson);
 
         socket.Emit("player_spell_fireball", data);
+    }
+
+    public void UseReflectShield() {
+        if(!isGameRunning) return;
+        
+        JSONObject data = new JSONObject();
+        data.AddField("id", this.playerId);
+
+        socket.Emit("player_spell_reflect_shield", data);
     }
 }

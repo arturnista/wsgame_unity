@@ -36,6 +36,9 @@ public class ActionController : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Q)) {
 			nextAction = Action.Fireball;
 		}
+		if(Input.GetKeyDown(KeyCode.E)) {
+			syncController.UseReflectShield();
+		}
 
 		if (Input.GetKeyDown(KeyCode.Escape)) {
             nextAction = Action.Move;

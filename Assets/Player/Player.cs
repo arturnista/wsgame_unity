@@ -10,6 +10,8 @@ public class Player : SyncObject {
 
 	private SpriteRenderer spriteRenderer;
 
+	private Transform reflectShield;
+
 	public float Life {
 		get {
 			return life;
@@ -30,6 +32,7 @@ public class Player : SyncObject {
 
 	void Awake() {
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+		reflectShield = transform.Find("Modifiers/ReflectShield");
 	}
 
 	protected override void Update() {
@@ -45,6 +48,14 @@ public class Player : SyncObject {
 		Color color;
 		ColorUtility.TryParseHtmlString(data["color"].str, out color);
 		this.spriteRenderer.color = color;
+
+		List<JSONObject> modifiers = data["modifiers"].list;
+		if(modifiers.Count > 0) {
+			JSONObject hasReflectShield = modifiers.Find(x => x.str == "reflect_shield");
+			if(hasReflectShield) reflectShield.gameObject.SetActive(true);
+		} else {
+			reflectShield.gameObject.SetActive(false);
+		}
 	}
 	
 }
