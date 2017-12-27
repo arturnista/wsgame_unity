@@ -9,7 +9,6 @@
   "author": "Artur Nista",
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/storage": "^1.5.1",
-    "firebase": "^4.8.1"
+    "@google-cloud/storage": "^1.5.1"
   }
 }

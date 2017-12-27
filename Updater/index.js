@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const firebase = require('firebase')
 const googleStorage = require('@google-cloud/storage')
 
 let pathToDownload = './'
