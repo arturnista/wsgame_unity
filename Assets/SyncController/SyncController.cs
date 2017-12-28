@@ -195,7 +195,10 @@ public class SyncController : MonoBehaviour {
             Spell spellOnList = spellsList.Find(x => x.id == spell["id"].str);
             if (spellOnList == null) {
                 if(spell["type"].str == "fireball") {
-                    GameObject go = Instantiate(fireballPrefab, Vector2.zero, Quaternion.identity) as GameObject;
+                    float xPos = spell["position"]["x"].n;
+                    float yPos = spell["position"]["y"].n;
+                    
+                    GameObject go = Instantiate(fireballPrefab, new Vector2(xPos, yPos), Quaternion.identity) as GameObject;
                     spellOnList = go.GetComponent<Spell>();
                 }
                 spellsList.Add(spellOnList);
