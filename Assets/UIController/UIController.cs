@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class UIController : MonoBehaviour {
 
 	public bool isGameScene = true;
+	public GameObject userLinePrefab;
 
 	private SyncController syncController;
 
@@ -14,9 +15,10 @@ public class UIController : MonoBehaviour {
 	private Button readyButton;
 	private Button startGameButton;
 	private InputField roomNameInput;
-	private Text usersReadyText;
-	private Text usersWaitingText;
+	private InputField userNameInput;
 	private Image playerColorImage;
+	private GameObject usersList;
+	private Text roomNameText;
 
 	private GameObject selectRoomCanvas;
 	private GameObject roomCanvas;
@@ -36,13 +38,14 @@ public class UIController : MonoBehaviour {
 			roomCanvas = GameObject.Find("RoomCanvas");
 
 			roomNameInput = GameObject.Find("RoomNameInput").GetComponent<InputField>();
+			userNameInput = GameObject.Find("UserNameInput").GetComponent<InputField>();
 			createGameButton = GameObject.Find("CreateGameButton").GetComponent<Button>();
 			joinGameButton = GameObject.Find("JoinGameButton").GetComponent<Button>();
 			readyButton = GameObject.Find("ReadyButton").GetComponent<Button>();
 			startGameButton = GameObject.Find("StartGameButton").GetComponent<Button>();
-			usersReadyText = GameObject.Find("UsersReadyText").GetComponent<Text>();
-			usersWaitingText = GameObject.Find("UsersWaitingText").GetComponent<Text>();
 			playerColorImage = GameObject.Find("PlayerColorImage").GetComponent<Image>();
+			usersList = GameObject.Find("UsersList");
+			roomNameText = GameObject.Find("RoomNameText").GetComponent<Text>();
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
@@ -103,11 +106,16 @@ public class UIController : MonoBehaviour {
 		syncController.SetRoomName(roomNameInput.text);
 	}
 
+	public void OnUserNameChange() {
+		syncController.SetUserName(userNameInput.text);
+	}
+
 	public void MyUserJoinedRoom(string roomName, bool isOwner) {
 		selectRoomCanvas.SetActive(false);
 		roomCanvas.SetActive(true);
 
 		if(!isOwner) startGameButton.gameObject.SetActive(false);
+		roomNameText.text = syncController.GetRoomName();
 	}
 
 	public void UserJoinedRoom(int number) {
@@ -123,9 +131,23 @@ public class UIController : MonoBehaviour {
 		Application.Quit();
 	}
 
-	public void UserStatusUpdate(int ready, int waiting) {
-		usersReadyText.text = ready.ToString() + " Ready";
-		usersWaitingText.text =  "Waiting " + waiting.ToString();
+	public void UserStatusUpdate(List<User> users) {
+		if(isGameScene) return;
+
+        foreach (Transform child in usersList.transform) {
+			Destroy(child.gameObject);
+		}
+
+		foreach(User u in users) {
+			GameObject userLine = Instantiate(userLinePrefab, Vector3.zero, Quaternion.identity) as GameObject;
+			userLine.transform.SetParent(usersList.transform);
+
+			if(u.status == "ready") userLine.transform.Find("StatusColor").GetComponent<Image>().color = new Color(0.1f, 0.36f, 0.13f, 0.4f);
+			else userLine.transform.Find("StatusColor").GetComponent<Image>().color = new Color(0, 0, 0, 0);
+			userLine.transform.Find("UserName").GetComponent<Text>().text = u.name;
+			userLine.transform.Find("UserColor").GetComponent<Image>().color = u.color;
+			if(!u.isOwner) userLine.transform.Find("OwnerImage").gameObject.SetActive(false);
+		}
 	}
 
 }

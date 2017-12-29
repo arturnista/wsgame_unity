@@ -21,12 +21,10 @@ public class SyncController : MonoBehaviour {
     public bool isUserRoomOwner = false;
     public bool isUserReady = false;
     private List<User> usersInRoom;
-    public int numberOfUsersInRoom = 0;
-    public int numberOfusersWaiting = 0;
-    public int numberOfUsersReady = 0;
     private Color userColor;
 
     private string roomName;
+    private string userName;
     private bool isGameRunning = false;
 
 	private string playerId;
@@ -41,6 +39,7 @@ public class SyncController : MonoBehaviour {
 		socket = GetComponent<SocketIOComponent>();
 
         roomName = "";
+        userName = "";
 	}
 
     public void Start() {
@@ -54,6 +53,7 @@ public class SyncController : MonoBehaviour {
         socket.On("user_joined_room", UserJoinedRoom);
         socket.On("user_ready", UserReady);
         socket.On("user_waiting", UserWaiting);
+        socket.On("user_left_room", UserLeftRoom);
 
 		socket.On("game_will_start", GameWillStart);
 		socket.On("game_start", GameStart);
@@ -81,7 +81,7 @@ public class SyncController : MonoBehaviour {
             mapController = GameObject.FindObjectOfType<MapController>();
             cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
         } else if(current.name == "Menu") {
-            uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
+            uiController.UserStatusUpdate(usersInRoom);
             if(userColor != null) uiController.SetPlayerColor(userColor);
         }
 
@@ -106,9 +106,17 @@ public class SyncController : MonoBehaviour {
 
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
-        this.isUserRoomOwner = this.userId == e.data["room"]["owner"]["id"].str;
+        string ownerId = e.data["room"]["owner"]["id"].str;
+        this.isUserRoomOwner = this.userId == ownerId;
         this.roomName = e.data["room"]["name"].str;
         uiController.MyUserJoinedRoom(this.roomName, this.isUserRoomOwner);
+        
+        usersInRoom = new List<User>();
+        foreach (JSONObject uData in e.data["room"]["users"].list) {
+            User u = new User(uData, ownerId == uData["id"].str);
+            usersInRoom.Add(u);            
+        }
+        uiController.UserStatusUpdate(usersInRoom);
         
 		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out this.userColor);
         uiController.SetPlayerColor(userColor);
@@ -117,28 +125,30 @@ public class SyncController : MonoBehaviour {
     }
 
     void UserJoinedRoom(SocketIOEvent e) {
-        usersInRoom = new List<User>();
-        List<JSONObject> us = e.data["users"].list;
-        foreach(JSONObject u in us) {
-            User user = new User();
-            user.SetData(u);
-            usersInRoom.Add(user);
-        }
+        if(this.userId == e.data["user"]["id"].str) return;
 
-        numberOfUsersInRoom = (int) e.data["usersNumber"].n;
-        numberOfusersWaiting = (int) e.data["usersWaiting"].n;
-        numberOfUsersReady = (int) e.data["usersReady"].n;
-        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
+        User user = new User(e.data["user"], e.data["room"]["owner"]["id"].str == e.data["user"]["id"].str);
+        usersInRoom.Add(user);
+
+        uiController.UserStatusUpdate(usersInRoom);
     }
+
     void UserReady(SocketIOEvent e) {
-        numberOfUsersReady++;
-        numberOfusersWaiting--;
-        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
+        User userInList = usersInRoom.Find(x => x.id == e.data["user"].str);
+        userInList.status = "ready";
+        uiController.UserStatusUpdate(usersInRoom);
     }
+
     void UserWaiting(SocketIOEvent e) {
-        numberOfUsersReady--;
-        numberOfusersWaiting++;
-        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
+        User userInList = usersInRoom.Find(x => x.id == e.data["user"].str);
+        userInList.status = "waiting";
+        uiController.UserStatusUpdate(usersInRoom);
+    }
+
+    void UserLeftRoom(SocketIOEvent e) {
+        User userInList = usersInRoom.Find(x => x.id == e.data["id"].str);
+        usersInRoom.Remove(userInList);
+        uiController.UserStatusUpdate(usersInRoom);
     }
 
     void GameWillStart(SocketIOEvent e) {
@@ -162,8 +172,6 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] Game ended");
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
-        this.numberOfusersWaiting = this.numberOfUsersInRoom;
-        this.numberOfUsersReady = 0;
         this.isUserReady = false;
     }
 
@@ -243,6 +251,10 @@ public class SyncController : MonoBehaviour {
         this.roomName = name;
     }
 
+    public void SetUserName(string name) {
+        this.userName = name;
+    }
+
     public string GetRoomName() {
         return this.roomName;
     }
@@ -250,12 +262,14 @@ public class SyncController : MonoBehaviour {
     public void CreateGame() {
         JSONObject data = new JSONObject();
         data.AddField("name", roomName);
+        data.AddField("userName", userName);
         socket.Emit("room_create", data); 
     }
 
     public void JoinGame() {
         JSONObject data = new JSONObject();
         data.AddField("name", roomName);
+        data.AddField("userName", userName);
         socket.Emit("room_join", data);       
     }
 
