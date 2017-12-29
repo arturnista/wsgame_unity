@@ -39,7 +39,7 @@ public class SyncController : MonoBehaviour {
 		socket = GetComponent<SocketIOComponent>();
 
         roomName = "";
-        userName = "";
+        userName = PlayerPrefs.GetString("Name", "");
 	}
 
     public void Start() {
@@ -82,6 +82,7 @@ public class SyncController : MonoBehaviour {
             cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
         } else if(current.name == "Menu") {
             uiController.UserStatusUpdate(usersInRoom);
+            uiController.SetUserName(userName);
             if(userColor != null) uiController.SetPlayerColor(userColor);
         }
 
@@ -264,13 +265,17 @@ public class SyncController : MonoBehaviour {
         data.AddField("name", roomName);
         data.AddField("userName", userName);
         socket.Emit("room_create", data); 
+
+        PlayerPrefs.SetString("Name", userName);
     }
 
     public void JoinGame() {
         JSONObject data = new JSONObject();
         data.AddField("name", roomName);
         data.AddField("userName", userName);
-        socket.Emit("room_join", data);       
+        socket.Emit("room_join", data);  
+
+        PlayerPrefs.SetString("Name", userName);     
     }
 
     public void ToggleReady() {

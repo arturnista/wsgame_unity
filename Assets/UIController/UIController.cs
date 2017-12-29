@@ -110,6 +110,10 @@ public class UIController : MonoBehaviour {
 		syncController.SetUserName(userNameInput.text);
 	}
 
+	public void SetUserName(string name) {
+		userNameInput.text = name;
+	}
+
 	public void MyUserJoinedRoom(string roomName, bool isOwner) {
 		selectRoomCanvas.SetActive(false);
 		roomCanvas.SetActive(true);
@@ -133,6 +137,7 @@ public class UIController : MonoBehaviour {
 
 	public void UserStatusUpdate(List<User> users) {
 		if(isGameScene) return;
+		if(users == null) return;
 
         foreach (Transform child in usersList.transform) {
 			Destroy(child.gameObject);
