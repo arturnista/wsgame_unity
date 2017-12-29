@@ -81,7 +81,7 @@ public class SyncController : MonoBehaviour {
             mapController = GameObject.FindObjectOfType<MapController>();
             cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
         } else if(current.name == "Menu") {
-            uiController.UserStatusUpdate(usersReady, usersWaiting);
+            uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
             if(userColor != null) uiController.SetPlayerColor(userColor);
         }
 
@@ -162,9 +162,8 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] Game ended");
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
-
-        this.usersWaiting = this.numberOfUsersInRoom;
-        this.usersReady = 0;
+        this.numberOfusersWaiting = this.numberOfUsersInRoom;
+        this.numberOfUsersReady = 0;
         this.isUserReady = false;
     }
 
