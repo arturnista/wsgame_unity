@@ -20,9 +20,10 @@ public class SyncController : MonoBehaviour {
     public bool isUserInRoom = false;
     public bool isUserRoomOwner = false;
     public bool isUserReady = false;
-    public int usersInRoom = 0;
-    public int usersReady = 0;
-    public int usersWaiting = 0;
+    private List<User> usersInRoom;
+    public int numberOfUsersInRoom = 0;
+    public int numberOfusersWaiting = 0;
+    public int numberOfUsersReady = 0;
     private Color userColor;
 
     private string roomName;
@@ -116,20 +117,28 @@ public class SyncController : MonoBehaviour {
     }
 
     void UserJoinedRoom(SocketIOEvent e) {
-        usersInRoom = (int) e.data["usersNumber"].n;
-        usersWaiting = (int) e.data["usersWaiting"].n;
-        usersReady = (int) e.data["usersReady"].n;
-        uiController.UserStatusUpdate(usersReady, usersWaiting);
+        usersInRoom = new List<User>();
+        List<JSONObject> us = e.data["users"].list;
+        foreach(JSONObject u in us) {
+            User user = new User();
+            user.SetData(u);
+            usersInRoom.Add(user);
+        }
+
+        numberOfUsersInRoom = (int) e.data["usersNumber"].n;
+        numberOfusersWaiting = (int) e.data["usersWaiting"].n;
+        numberOfUsersReady = (int) e.data["usersReady"].n;
+        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
     }
     void UserReady(SocketIOEvent e) {
-        usersReady++;
-        usersWaiting--;
-        uiController.UserStatusUpdate(usersReady, usersWaiting);
+        numberOfUsersReady++;
+        numberOfusersWaiting--;
+        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
     }
     void UserWaiting(SocketIOEvent e) {
-        usersReady--;
-        usersWaiting++;
-        uiController.UserStatusUpdate(usersReady, usersWaiting);
+        numberOfUsersReady--;
+        numberOfusersWaiting++;
+        uiController.UserStatusUpdate(numberOfUsersReady, numberOfusersWaiting);
     }
 
     void GameWillStart(SocketIOEvent e) {
@@ -154,7 +163,7 @@ public class SyncController : MonoBehaviour {
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
 
-        this.usersWaiting = this.usersInRoom;
+        this.usersWaiting = this.numberOfUsersInRoom;
         this.usersReady = 0;
         this.isUserReady = false;
     }
