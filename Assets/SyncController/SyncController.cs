@@ -10,8 +10,8 @@ public class SyncController : MonoBehaviour {
     public GameObject fireballPrefab;
 
     private UIController uiController;
-
     private MapController mapController;
+    private CameraBehavior cameraBehavior;
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
@@ -30,6 +30,7 @@ public class SyncController : MonoBehaviour {
 
 	private string playerId;
 	private string userId;
+    private bool isPlayerAlive;
 
 	public void Awake() {
         DontDestroyOnLoad(this.gameObject);
@@ -77,6 +78,7 @@ public class SyncController : MonoBehaviour {
         if(current.name == "Game") {
             this.isGameRunning = true;
             mapController = GameObject.FindObjectOfType<MapController>();
+            cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
         } else if(current.name == "Menu") {
             uiController.UserStatusUpdate(usersReady, usersWaiting);
             if(userColor != null) uiController.SetPlayerColor(userColor);
@@ -137,7 +139,7 @@ public class SyncController : MonoBehaviour {
 
     void GameStart(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game start");
-
+        this.isPlayerAlive = true;
     }
 
     void GameWillEnd(SocketIOEvent e) {
@@ -186,6 +188,13 @@ public class SyncController : MonoBehaviour {
                 playersList.Add(playerInList);
             }
             playerInList.SetData( player );
+
+            if(player["id"].str == this.playerId) {
+                if(this.isPlayerAlive && player["status"].str != "alive") {
+                    this.isPlayerAlive = false;
+                    cameraBehavior.SetObserver();
+                }
+            }
         }
 
         List<JSONObject> receivedSpellsList = e.data["spells"].list;
