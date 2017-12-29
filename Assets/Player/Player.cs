@@ -11,6 +11,7 @@ public class Player : SyncObject {
 	private SpriteRenderer spriteRenderer;
 
 	private Transform reflectShield;
+	private bool staticValueDefined;
 
 	public float Life {
 		get {
@@ -33,6 +34,7 @@ public class Player : SyncObject {
 	void Awake() {
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 		reflectShield = transform.Find("Modifiers/ReflectShield");
+		staticValueDefined = false;
 	}
 
 	protected override void Update() {
@@ -45,16 +47,22 @@ public class Player : SyncObject {
 		this.life = data["life"].n;
 		this.knockback = data["knockbackValue"].n;
 		this.status = data["status"].str;
-		Color color;
-		ColorUtility.TryParseHtmlString(data["color"].str, out color);
-		this.spriteRenderer.color = color;
+		if(!staticValueDefined) {
+			Color color;
+			ColorUtility.TryParseHtmlString(data["color"].str, out color);
+			this.spriteRenderer.color = color;
+
+			staticValueDefined = true;
+		}
 
 		List<JSONObject> modifiers = data["modifiers"].list;
 		if(modifiers.Count > 0) {
 			JSONObject hasReflectShield = modifiers.Find(x => x.str == "reflect_shield");
-			if(hasReflectShield) reflectShield.gameObject.SetActive(true);
+			if(hasReflectShield && !reflectShield.gameObject.activeSelf) {
+				reflectShield.gameObject.SetActive(true);
+			}
 		} else {
-			reflectShield.gameObject.SetActive(false);
+			if(reflectShield.gameObject.activeSelf) reflectShield.gameObject.SetActive(false);
 		}
 	}
 	

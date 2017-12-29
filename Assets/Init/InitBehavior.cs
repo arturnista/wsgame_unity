@@ -5,12 +5,20 @@ using UnityEngine;
 
 public class InitBehavior : MonoBehaviour {
 	
+	public GameObject localSyncController;
+	public GameObject remoteSyncController;
+
 	public float timeToLoad;
 
 	private float timePassed;
 
 	void Start () {
-		// SceneManager.LoadScene("Menu");    
+		if(Application.isEditor) {
+			Instantiate(localSyncController, Vector3.zero, Quaternion.identity);
+			SceneManager.LoadScene("Menu");
+		} else {
+			Instantiate(remoteSyncController, Vector3.zero, Quaternion.identity);
+		}
 	}
 	
 	void Update () {

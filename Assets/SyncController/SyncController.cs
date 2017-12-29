@@ -209,17 +209,11 @@ public class SyncController : MonoBehaviour {
 
 	void DeleteObject(SocketIOEvent e) {
         if(!isGameRunning) return;
-        
-		Player playerInList = playersList.Find(x => x.id == e.data["id"].str);
-		if(playerInList) {
-            playersList.Remove(playerInList);
-		    Destroy(playerInList.gameObject);
-        }
 
 		Spell spellOnList = spellsList.Find(x => x.id == e.data["id"].str);
 		if(spellOnList) {
             spellsList.Remove(spellOnList);
-		    Destroy(spellOnList.gameObject);
+            spellOnList.Destroy();
         }
 	}
 

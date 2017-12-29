@@ -19,8 +19,7 @@ public class SyncObject : MonoBehaviour
         transform.position += this.velocity * Time.deltaTime;
     }
 
-    public virtual void SetData(JSONObject data)
-    {
+    public virtual void SetData(JSONObject data) {
         this.id = data["id"].str;
 
         float xPos = data["position"]["x"].n;

@@ -15,6 +15,7 @@ public class ActionController : MonoBehaviour {
 
 	private GameObject moveSignal;
 	private float screenWidthProp;
+	private Vector3 lastMousePos;
 
 	void Awake () {
 		moveSignal = GameObject.Find("MoveSignal");
@@ -62,5 +63,20 @@ public class ActionController : MonoBehaviour {
         }
 		nextAction = Action.Move;
     }
+
+	// void OnMouseDrag() {
+	// 	Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+	// 	if(nextAction != Action.Move) {
+	// 		lastMousePos = mousePos;
+	// 		return;
+	// 	}
+
+	// 	if(Vector3.Distance(mousePos, lastMousePos) < 5.0f) return;
+	// 	lastMousePos = mousePos;
+
+	// 	moveSignal.transform.position = mousePos;
+	// 	syncController.MovePlayer(mousePos);
+	// }
 
 }
