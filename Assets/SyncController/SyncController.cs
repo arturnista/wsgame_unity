@@ -12,6 +12,7 @@ public class SyncController : MonoBehaviour {
     private UIController uiController;
     private MapController mapController;
     private CameraBehavior cameraBehavior;
+    private ActionController actionController;
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
@@ -31,11 +32,14 @@ public class SyncController : MonoBehaviour {
 	private string userId;
     private bool isPlayerAlive;
 
+    private List<string> spellsSelected;
+
 	public void Awake() {
         DontDestroyOnLoad(this.gameObject);
 
 		playersList = new List<Player>();
         spellsList = new List<Spell>();
+        spellsSelected = new List<string>();
 		socket = GetComponent<SocketIOComponent>();
 
         roomName = "";
@@ -80,6 +84,8 @@ public class SyncController : MonoBehaviour {
             this.isGameRunning = true;
             mapController = GameObject.FindObjectOfType<MapController>();
             cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
+            actionController = GameObject.FindObjectOfType<ActionController>();
+            actionController.SetSpells(spellsSelected);
         } else if(current.name == "Menu") {
             uiController.UserStatusUpdate(usersInRoom);
             uiController.SetUserName(userName);
@@ -174,6 +180,7 @@ public class SyncController : MonoBehaviour {
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
         this.isUserReady = false;
+        spellsSelected = new List<string>();
     }
 
     void PlayerCreated(SocketIOEvent e) {
@@ -287,6 +294,22 @@ public class SyncController : MonoBehaviour {
         isUserReady = !isUserReady;
     }
 
+    public void SelectSpell(string spellName) {
+		JSONObject data = new JSONObject();
+        data.AddField("spellName", spellName);
+
+        socket.Emit("user_select_spell", data);
+        spellsSelected.Add(spellName);
+    }
+
+    public void DeselectSpell(string spellName) {
+		JSONObject data = new JSONObject();
+        data.AddField("spellName", spellName);
+
+        socket.Emit("user_deselect_spell", data);
+        spellsSelected.Remove(spellName);
+    }
+
     public void StartGame() {
         socket.Emit("game_start");
     }
@@ -306,7 +329,7 @@ public class SyncController : MonoBehaviour {
         socket.Emit("player_move", data);
     }
 
-    public void UseFireball(Vector2 position, Vector2 direction) {
+    public void UseSpell(string spellName, Vector2 position, Vector2 direction) {
         if(!isGameRunning) return;
         
         JSONObject data = new JSONObject();
@@ -324,15 +347,7 @@ public class SyncController : MonoBehaviour {
         data.AddField("position", positionJson);
         data.AddField("direction", directionJson);
 
-        socket.Emit("player_spell_fireball", data);
+        socket.Emit("player_spell_" + spellName, data);
     }
 
-    public void UseReflectShield() {
-        if(!isGameRunning) return;
-        
-        JSONObject data = new JSONObject();
-        data.AddField("id", this.playerId);
-
-        socket.Emit("player_spell_reflect_shield", data);
-    }
 }

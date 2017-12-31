@@ -7,6 +7,7 @@ public class ActionController : MonoBehaviour {
     enum Action {
         Move,
         Fireball,
+        Blink,
     }
 
 	private SyncController syncController;
@@ -16,6 +17,7 @@ public class ActionController : MonoBehaviour {
 	private GameObject moveSignal;
 	private float screenWidthProp;
 	private Vector3 lastMousePos;
+	private List<string> spells;
 
 	void Awake () {
 		moveSignal = GameObject.Find("MoveSignal");
@@ -35,15 +37,25 @@ public class ActionController : MonoBehaviour {
 			return;
 		}
 		if(Input.GetKeyDown(KeyCode.Q)) {
-			nextAction = Action.Fireball;
+			this.SelectSpell(0);
+		}
+		if(Input.GetKeyDown(KeyCode.W)) {
+			this.SelectSpell(1);
 		}
 		if(Input.GetKeyDown(KeyCode.E)) {
-			syncController.UseReflectShield();
+			this.SelectSpell(2);
+		}
+		if(Input.GetKeyDown(KeyCode.R)) {
+			this.SelectSpell(3);
 		}
 
 		if (Input.GetKeyDown(KeyCode.Escape)) {
             nextAction = Action.Move;
         }
+	}
+
+	public void SetSpells(List<string> spells) {
+		this.spells = new List<string>(spells);
 	}
 
 	void OnMouseDown() {
@@ -58,11 +70,37 @@ public class ActionController : MonoBehaviour {
 				syncController.MovePlayer(position);
 				break;
             case Action.Fireball:
-                syncController.UseFireball(position, direction.normalized);
+				this.UseSpell("fireball");
+                break;
+            case Action.Blink:
+				this.UseSpell("blink");
                 break;
         }
 		nextAction = Action.Move;
     }
+
+	void SelectSpell(int idx) {
+		if(idx > spells.Count - 1) return;
+		string spellName = spells[idx];
+		switch(spellName) {
+			case "fireball": 
+				nextAction = Action.Fireball;
+				break;
+			case "blink": 
+				nextAction = Action.Blink;
+				break;
+			case "explosion": 
+			case "reflect_shield": 
+				this.UseSpell(spellName);
+				break;
+		}
+	}
+
+	void UseSpell(string spellName) {
+		Vector3 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		Vector3 direction = position - player.transform.position;
+		syncController.UseSpell(spellName, position, direction.normalized);
+	}
 
 	// void OnMouseDrag() {
 	// 	Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
