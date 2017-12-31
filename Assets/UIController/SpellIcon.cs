@@ -13,6 +13,7 @@ public class SpellIcon : MonoBehaviour {
 	private GameObject selectImage;
 
 	private Button button;
+	private Text selectText;
 
 	void Awake() {
 		button = GetComponent<Button>();
@@ -20,6 +21,8 @@ public class SpellIcon : MonoBehaviour {
 
 		selectImage = transform.Find("SelectedImage").gameObject;
 		selectImage.SetActive(false);
+		selectText = transform.Find("SelectedText").GetComponent<Text>();
+		selectText.gameObject.SetActive(false);
 		isSelected = false;
 
 		syncController = GameObject.FindObjectOfType<SyncController>();
@@ -27,14 +30,26 @@ public class SpellIcon : MonoBehaviour {
 
 	void Toggle() {
 		if(!isSelected) {
-			selectImage.SetActive(true);
 			syncController.SelectSpell(name);
-			isSelected = true;
 		} else {
-			selectImage.SetActive(false);
 			syncController.DeselectSpell(name);
-			isSelected = false;
 		}
+	}
+
+	public void Select(int idx) {
+		selectImage.SetActive(true);
+		selectText.gameObject.SetActive(true);
+		if(idx == 0) selectText.text = "Q";
+		else if(idx == 1) selectText.text = "W";
+		else if(idx == 2) selectText.text = "E";
+		else if(idx == 3) selectText.text = "R";
+		isSelected = true;
+	}
+
+	public void Deselect() {
+		selectText.gameObject.SetActive(false);
+		selectImage.SetActive(false);
+		isSelected = false;
 	}
 
 }

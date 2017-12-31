@@ -20,6 +20,8 @@ public class UIController : MonoBehaviour {
 	private GameObject usersList;
 	private Text roomNameText;
 
+	private List<SpellIcon> spellIcons;
+
 	private GameObject selectRoomCanvas;
 	private GameObject roomCanvas;
 
@@ -46,6 +48,8 @@ public class UIController : MonoBehaviour {
 			playerColorImage = GameObject.Find("PlayerColorImage").GetComponent<Image>();
 			usersList = GameObject.Find("UsersList");
 			roomNameText = GameObject.Find("RoomNameText").GetComponent<Text>();
+			SpellIcon[] iconsArray = GameObject.FindObjectsOfType<SpellIcon>();
+			spellIcons = new List<SpellIcon>(iconsArray);
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
@@ -133,6 +137,16 @@ public class UIController : MonoBehaviour {
 
 	public void ExitGame() {
 		Application.Quit();
+	}
+
+	public void SelectSpell(string name, int idx) {
+		SpellIcon ic = spellIcons.Find(x => x.name == name);
+		ic.Select(idx);
+	}
+
+	public void DeselectSpell(string name) {
+		SpellIcon ic = spellIcons.Find(x => x.name == name);
+		ic.Deselect();
 	}
 
 	public void UserStatusUpdate(List<User> users) {

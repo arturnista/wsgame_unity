@@ -57,6 +57,8 @@ public class SyncController : MonoBehaviour {
         socket.On("user_joined_room", UserJoinedRoom);
         socket.On("user_ready", UserReady);
         socket.On("user_waiting", UserWaiting);
+        socket.On("user_selected_spell", UserSelectSpell);
+        socket.On("user_deselected_spell", UserDeselectSpell);
         socket.On("user_left_room", UserLeftRoom);
 
 		socket.On("game_will_start", GameWillStart);
@@ -150,6 +152,18 @@ public class SyncController : MonoBehaviour {
         User userInList = usersInRoom.Find(x => x.id == e.data["user"].str);
         userInList.status = "waiting";
         uiController.UserStatusUpdate(usersInRoom);
+    }
+
+    void UserSelectSpell(SocketIOEvent e) {
+        string spellName = e.data["spellName"].str;
+        spellsSelected.Add(spellName);
+        uiController.SelectSpell(spellName, spellsSelected.Count - 1);
+    }
+
+    void UserDeselectSpell(SocketIOEvent e) {
+        string spellName = e.data["spellName"].str;
+        spellsSelected.Remove(spellName);
+        uiController.DeselectSpell(spellName);
     }
 
     void UserLeftRoom(SocketIOEvent e) {
@@ -299,7 +313,6 @@ public class SyncController : MonoBehaviour {
         data.AddField("spellName", spellName);
 
         socket.Emit("user_select_spell", data);
-        spellsSelected.Add(spellName);
     }
 
     public void DeselectSpell(string spellName) {
@@ -307,7 +320,6 @@ public class SyncController : MonoBehaviour {
         data.AddField("spellName", spellName);
 
         socket.Emit("user_deselect_spell", data);
-        spellsSelected.Remove(spellName);
     }
 
     public void StartGame() {
