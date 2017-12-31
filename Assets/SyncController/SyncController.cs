@@ -155,12 +155,16 @@ public class SyncController : MonoBehaviour {
     }
 
     void UserSelectSpell(SocketIOEvent e) {
+        if(e.data["user"].str != this.userId) return;
+
         string spellName = e.data["spellName"].str;
         spellsSelected.Add(spellName);
         uiController.SelectSpell(spellName, spellsSelected.Count - 1);
     }
 
     void UserDeselectSpell(SocketIOEvent e) {
+        if(e.data["user"].str != this.userId) return;
+        
         string spellName = e.data["spellName"].str;
         spellsSelected.Remove(spellName);
         uiController.DeselectSpell(spellName);
