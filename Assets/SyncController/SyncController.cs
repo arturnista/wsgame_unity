@@ -9,6 +9,7 @@ public class SyncController : MonoBehaviour {
 	public GameObject playerPrefab;
     public GameObject fireballPrefab;
     public GameObject followerPrefab;
+    public GameObject explosionPrefab;
 
     private UIController uiController;
     private MapController mapController;
@@ -53,6 +54,7 @@ public class SyncController : MonoBehaviour {
         socket.On("close", Close);
 
 		socket.On("myuser_info", DefineMyUserInfo);
+		socket.On("myuser_rooms", SetRoomsAvailable);
         socket.On("myuser_joined_room", MyUserJoinedRoom);
 
         socket.On("user_joined_room", UserJoinedRoom);
@@ -69,6 +71,7 @@ public class SyncController : MonoBehaviour {
 		socket.On("game_end", GameEnd);
 
         socket.On("player_create", PlayerCreated);
+        socket.On("player_use_spell", PlayerUseSpell);
 
         socket.On("map_create", CreateMap);
         socket.On("map_update", UpdateMap);
@@ -113,6 +116,11 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] User created");
         this.userId = e.data["id"].str;
 	}
+
+    void SetRoomsAvailable(SocketIOEvent e) {
+		Debug.Log("[SocketIO] " + e.data["rooms"]);
+        
+    }
 
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");
@@ -205,6 +213,20 @@ public class SyncController : MonoBehaviour {
     void PlayerCreated(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Player created");
         this.playerId = e.data["id"].str;
+    }
+
+    void PlayerUseSpell(SocketIOEvent e) {
+        string spellName = e.data["name"].str;
+
+        float xPos = e.data["player"]["position"]["x"].n;
+        float yPos = e.data["player"]["position"]["y"].n;
+        Vector3 position = new Vector2(xPos, yPos);
+
+        switch (spellName) {
+            case "explosion":
+                Instantiate(explosionPrefab, position, Quaternion.identity);
+                break;
+        }
     }
 
     void CreateMap(SocketIOEvent e) {

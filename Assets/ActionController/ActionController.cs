@@ -6,13 +6,16 @@ public class ActionController : MonoBehaviour {
 
     enum Action {
         Move,
-        Fireball,
-        Blink,
+		Spell
     }
+
+	public GameObject moveSignalEmitterPrefab;
+	public Texture2D aimCursorTexture;
 
 	private SyncController syncController;
 	private Player player;
 	private Action nextAction;
+	private string actionSpellName;
 
 	private GameObject moveSignal;
 	private float screenWidthProp;
@@ -67,16 +70,15 @@ public class ActionController : MonoBehaviour {
 		switch(nextAction) {
 			case Action.Move:
 				moveSignal.transform.position = position;
+				Instantiate(moveSignalEmitterPrefab, position, Quaternion.identity);
 				syncController.MovePlayer(position);
 				break;
-            case Action.Fireball:
-				this.UseSpell("fireball");
-                break;
-            case Action.Blink:
-				this.UseSpell("blink");
+            case Action.Spell:
+				this.UseSpell(actionSpellName);
                 break;
         }
 		nextAction = Action.Move;
+		Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
     }
 
 	void SelectSpell(int idx) {
@@ -84,10 +86,10 @@ public class ActionController : MonoBehaviour {
 		string spellName = spells[idx];
 		switch(spellName) {
 			case "fireball": 
-				nextAction = Action.Fireball;
-				break;
 			case "blink": 
-				nextAction = Action.Blink;
+				nextAction = Action.Spell;
+				actionSpellName = spellName;
+				Cursor.SetCursor(aimCursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
 				break;
 			default:
 				this.UseSpell(spellName);
