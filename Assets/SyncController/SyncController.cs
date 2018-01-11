@@ -8,6 +8,7 @@ public class SyncController : MonoBehaviour {
 
 	public GameObject playerPrefab;
     public GameObject fireballPrefab;
+    public GameObject followerPrefab;
 
     private UIController uiController;
     private MapController mapController;
@@ -250,6 +251,13 @@ public class SyncController : MonoBehaviour {
                     float yPos = spell["position"]["y"].n;
                     
                     GameObject go = Instantiate(fireballPrefab, new Vector2(xPos, yPos), Quaternion.identity) as GameObject;
+                    spellOnList = go.GetComponent<Spell>();
+                }
+                if(spell["type"].str == "follower") {
+                    float xPos = spell["position"]["x"].n;
+                    float yPos = spell["position"]["y"].n;
+                    
+                    GameObject go = Instantiate(followerPrefab, new Vector2(xPos, yPos), Quaternion.identity) as GameObject;
                     spellOnList = go.GetComponent<Spell>();
                 }
                 spellsList.Add(spellOnList);

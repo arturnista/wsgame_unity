@@ -89,8 +89,7 @@ public class ActionController : MonoBehaviour {
 			case "blink": 
 				nextAction = Action.Blink;
 				break;
-			case "explosion": 
-			case "reflect_shield": 
+			default:
 				this.UseSpell(spellName);
 				break;
 		}
