@@ -357,7 +357,10 @@ public class SyncController : MonoBehaviour {
     }
 
     public void StartGame() {
-        socket.Emit("game_start");
+		JSONObject data = new JSONObject();
+        data.AddField("map", "Grid");
+
+        socket.Emit("game_start", data);
     }
 
     public void MovePlayer(Vector2 position) {
