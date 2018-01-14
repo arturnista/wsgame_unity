@@ -357,9 +357,9 @@ public class SyncController : MonoBehaviour {
         socket.Emit("user_deselect_spell", data);
     }
 
-    public void StartGame() {
+    public void StartGame(string mapName) {
 		JSONObject data = new JSONObject();
-        // if(mapName.Length > 0) data.AddField("map", mapName);
+        if(mapName.Length > 0) data.AddField("map", mapName);
 
         socket.Emit("game_start", data);
     }

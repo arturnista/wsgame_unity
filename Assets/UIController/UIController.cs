@@ -19,6 +19,7 @@ public class UIController : MonoBehaviour {
 	private Image playerColorImage;
 	private GameObject usersList;
 	private Text roomNameText;
+	private GameObject mapSelectContainer;
 	private GameObject spellData;
 	private Text spellName;
 	private Text spellMultiplier;
@@ -28,6 +29,8 @@ public class UIController : MonoBehaviour {
 
 	private GameObject selectRoomCanvas;
 	private GameObject roomCanvas;
+
+	private string mapName;
 
 	private Player player;
 	private Text playerInfoText;
@@ -51,6 +54,8 @@ public class UIController : MonoBehaviour {
 			startGameButton = GameObject.Find("StartGameButton").GetComponent<Button>();
 			playerColorImage = GameObject.Find("PlayerColorImage").GetComponent<Image>();
 			usersList = GameObject.Find("UsersList");
+			mapSelectContainer = GameObject.Find("SelectMapContainer");
+			mapSelectContainer.SetActive(false);
 			roomNameText = GameObject.Find("RoomNameText").GetComponent<Text>();
 			SpellIcon[] iconsArray = GameObject.FindObjectsOfType<SpellIcon>();
 			spellIcons = new List<SpellIcon>(iconsArray);
@@ -64,7 +69,8 @@ public class UIController : MonoBehaviour {
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
 			readyButton.onClick.AddListener(this.onReadyClick);
-			startGameButton.onClick.AddListener(syncController.StartGame);
+			mapName = "";
+			startGameButton.onClick.AddListener(() => syncController.StartGame(mapName));
 
 			selectRoomCanvas.SetActive(true);
 			roomCanvas.SetActive(false);
@@ -155,7 +161,7 @@ public class UIController : MonoBehaviour {
 
 		spellData.SetActive(true);
 		spellName.text = data["spellName"].str;
-		if(data["type"].str == "offensive") {
+		if(data["spellData"]["type"].str == "offensive") {
 			spellMultiplier.text = (data["spellData"]["knockbackMultiplier"].n * 100) + "%";
 			spellIncrement.text = (data["spellData"]["knockbackIncrement"].n * 100 - 100) + "%";
 		} else {
@@ -187,6 +193,15 @@ public class UIController : MonoBehaviour {
 			userLine.transform.Find("UserColor").GetComponent<Image>().color = u.color;
 			if(!u.isOwner) userLine.transform.Find("OwnerImage").gameObject.SetActive(false);
 		}
+	}
+
+	public void OpenSelectMap() {
+		mapSelectContainer.SetActive(true);
+	}
+
+	public void SetMapName(string mapName) {
+		this.mapName = mapName;
+		mapSelectContainer.SetActive(false);
 	}
 
 }
