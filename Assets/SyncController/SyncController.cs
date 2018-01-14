@@ -168,7 +168,7 @@ public class SyncController : MonoBehaviour {
 
         string spellName = e.data["spellName"].str;
         spellsSelected.Add(spellName);
-        uiController.SelectSpell(spellName, spellsSelected.Count - 1);
+        uiController.SelectSpell(e.data, spellsSelected.Count - 1);
     }
 
     void UserDeselectSpell(SocketIOEvent e) {

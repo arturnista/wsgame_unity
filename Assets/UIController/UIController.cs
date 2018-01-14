@@ -19,6 +19,10 @@ public class UIController : MonoBehaviour {
 	private Image playerColorImage;
 	private GameObject usersList;
 	private Text roomNameText;
+	private GameObject spellData;
+	private Text spellName;
+	private Text spellMultiplier;
+	private Text spellIncrement;
 
 	private List<SpellIcon> spellIcons;
 
@@ -50,6 +54,12 @@ public class UIController : MonoBehaviour {
 			roomNameText = GameObject.Find("RoomNameText").GetComponent<Text>();
 			SpellIcon[] iconsArray = GameObject.FindObjectsOfType<SpellIcon>();
 			spellIcons = new List<SpellIcon>(iconsArray);
+
+			spellData = GameObject.Find("SpellData");
+			spellName = GameObject.Find("SpellName").GetComponent<Text>();
+			spellMultiplier = GameObject.Find("Multiplier").GetComponent<Text>();
+			spellIncrement = GameObject.Find("Increment").GetComponent<Text>();
+			spellData.SetActive(false);
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
 			joinGameButton.onClick.AddListener(syncController.JoinGame);
@@ -139,9 +149,19 @@ public class UIController : MonoBehaviour {
 		Application.Quit();
 	}
 
-	public void SelectSpell(string name, int idx) {
-		SpellIcon ic = spellIcons.Find(x => x.name == name);
+	public void SelectSpell(JSONObject data, int idx) {
+		SpellIcon ic = spellIcons.Find(x => x.name == data["spellName"].str);
 		ic.Select(idx);
+
+		spellData.SetActive(true);
+		spellName.text = data["spellName"].str;
+		if(data["type"].str == "offensive") {
+			spellMultiplier.text = (data["spellData"]["knockbackMultiplier"].n * 100) + "%";
+			spellIncrement.text = (data["spellData"]["knockbackIncrement"].n * 100 - 100) + "%";
+		} else {
+			spellMultiplier.text = "";
+			spellIncrement.text = "";
+		}
 	}
 
 	public void DeselectSpell(string name) {
