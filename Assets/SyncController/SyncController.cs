@@ -358,7 +358,7 @@ public class SyncController : MonoBehaviour {
 
     public void StartGame() {
 		JSONObject data = new JSONObject();
-        data.AddField("map", "Grid");
+        // if(mapName.Length > 0) data.AddField("map", mapName);
 
         socket.Emit("game_start", data);
     }
