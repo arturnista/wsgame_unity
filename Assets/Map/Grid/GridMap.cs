@@ -65,4 +65,8 @@ public class GridMap : Map {
 	public override Vector3 GetPosition() {
 		return position;
 	}
+
+	public override float GetSize() {
+		return size;
+	}
 }

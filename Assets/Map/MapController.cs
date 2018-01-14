@@ -7,6 +7,12 @@ public class MapController : MonoBehaviour {
 	public List<MapItem> mapsAvailable;
 	private Map currentMap;
 
+	public bool started {
+		get {
+			return currentMap != null;
+		}
+	}
+
 	void Awake () {
 
 	}
@@ -27,5 +33,9 @@ public class MapController : MonoBehaviour {
 
 	public Vector3 GetPosition() {
 		return currentMap.GetPosition();
+	}
+
+	public float GetSize() {
+		return currentMap.GetSize();
 	}
 }

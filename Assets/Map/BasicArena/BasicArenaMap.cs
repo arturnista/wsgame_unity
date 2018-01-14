@@ -71,4 +71,8 @@ public class BasicArenaMap : Map {
 	public override Vector3 GetPosition() {
 		return ground.position;
 	}
+
+	public override float GetSize() {
+		return size;
+	}
 }

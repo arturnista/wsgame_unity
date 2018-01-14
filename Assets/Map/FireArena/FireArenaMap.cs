@@ -71,4 +71,8 @@ public class FireArenaMap : Map {
 	public override Vector3 GetPosition() {
 		return ground.position;
 	}
+
+	public override float GetSize() {
+		return size;
+	}
 }

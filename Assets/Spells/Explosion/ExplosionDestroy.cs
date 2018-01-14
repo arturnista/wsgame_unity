@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExplosionDestroy : MonoBehaviour {
+public class ExplosionDestroy : Spell {
 
 	public Color color;
 	public float duration = 1f;
@@ -28,13 +28,32 @@ public class ExplosionDestroy : MonoBehaviour {
 		durationSprite.color = color;
 	}
 
-	void Start() {
+	protected override void Start() {
+		base.Start();
+
 		startTime = Time.time;		
 	}
 	
-	void Update () {
+	protected override void Update () {
+		base.Update();
+
 		float t = ( Time.time - startTime ) / duration;
 		currentSize = Mathf.Lerp(initialSize, fullSize, t);
 		durationSprite.transform.localScale = new Vector3(currentSize, currentSize);
 	}
+
+	public override void SetData(JSONObject data) {
+		base.SetData(data);
+
+		fullSize = data["radius"].n;
+		initialSize = 0f;
+		currentSize = initialSize;
+
+		areaSprite.transform.localScale = new Vector3(fullSize, fullSize);
+		durationSprite.transform.localScale = new Vector3(initialSize, initialSize);
+
+		startTime = Time.time;	
+		duration = data["duration"].n / 1000f;	
+		GetComponent<Lifespan>().time = duration;
+    }
 }

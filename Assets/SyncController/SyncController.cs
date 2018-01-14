@@ -218,13 +218,14 @@ public class SyncController : MonoBehaviour {
     void PlayerUseSpell(SocketIOEvent e) {
         string spellName = e.data["name"].str;
 
-        float xPos = e.data["player"]["position"]["x"].n;
-        float yPos = e.data["player"]["position"]["y"].n;
+        float xPos = e.data["position"]["x"].n;
+        float yPos = e.data["position"]["y"].n;
         Vector3 position = new Vector2(xPos, yPos);
 
         switch (spellName) {
             case "explosion":
-                Instantiate(explosionPrefab, position, Quaternion.identity);
+                Spell s = Instantiate(explosionPrefab, position, Quaternion.identity).GetComponent<Spell>();
+                s.SetData(e.data);
                 break;
         }
     }

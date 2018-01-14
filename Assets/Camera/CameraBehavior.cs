@@ -5,11 +5,13 @@ using UnityEngine;
 public class CameraBehavior : MonoBehaviour {
 
 	public enum CameraMode {
+		ToStart,
 		Game,
 		Observer
 	}
 
-	public int minimumSize = 300;
+	public int minimumSizeOffset = 100;
+	private int minimumSize = 300;
 	private CameraMode mode;
 
 	Camera thisCamera;
@@ -27,11 +29,19 @@ public class CameraBehavior : MonoBehaviour {
 		thisCamera = GetComponent<Camera>();
 		thisCamera.orthographicSize = minimumSize;
 
-		mode = CameraMode.Game;
+		mode = CameraMode.ToStart;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if(mode == CameraMode.ToStart) {
+			if(mapController.started) {
+				mode = CameraMode.Game;
+				minimumSize = (int) (mapController.GetSize() / 2) + minimumSizeOffset;
+			}
+			return;
+		}
+
 		float dist = 0f;
 		if(mode == CameraMode.Game) {
 			if(player == null) {

@@ -15,4 +15,8 @@ public class Map : MonoBehaviour {
 	public virtual Vector3 GetPosition() {
 		return Vector3.zero;
 	}
+
+	public virtual float GetSize() {
+		return 0;
+	}
 }

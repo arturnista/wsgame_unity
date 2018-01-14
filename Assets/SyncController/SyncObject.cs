@@ -32,7 +32,9 @@ public class SyncObject : MonoBehaviour
             this.velocity = new Vector2(xVel, yVel);
         }
 
-        float size = data["collider"]["size"].n;
-        transform.localScale = new Vector2(size, size);
+        if(data.HasField("collider")) {
+            float size = data["collider"]["size"].n;
+            transform.localScale = new Vector2(size, size);
+        }
     }
 }

@@ -86,6 +86,7 @@ public class ActionController : MonoBehaviour {
 		string spellName = spells[idx];
 		switch(spellName) {
 			case "fireball": 
+			case "explosion": 
 			case "blink": 
 				nextAction = Action.Spell;
 				actionSpellName = spellName;
