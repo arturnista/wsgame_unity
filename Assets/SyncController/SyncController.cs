@@ -164,17 +164,29 @@ public class SyncController : MonoBehaviour {
     }
 
     void UserSelectSpell(SocketIOEvent e) {
-        if(e.data["user"].str != this.userId) return;
-
+        string uid = e.data["user"].str;
         string spellName = e.data["spellName"].str;
+
+        if(uid != this.userId) {
+            User u = usersInRoom.Find(x => x.id == uid);
+            u.spells.Add(spellName);
+            return;
+        }
+
         spellsSelected.Add(spellName);
         uiController.SelectSpell(e.data, spellsSelected.Count - 1);
     }
 
     void UserDeselectSpell(SocketIOEvent e) {
-        if(e.data["user"].str != this.userId) return;
-        
+        string uid = e.data["user"].str;
         string spellName = e.data["spellName"].str;
+
+        if(uid != this.userId) {
+            User u = usersInRoom.Find(x => x.id == uid);
+            u.spells.Remove(spellName);
+            return;
+        }
+        
         spellsSelected.Remove(spellName);
         uiController.DeselectSpell(spellName);
     }
@@ -197,7 +209,6 @@ public class SyncController : MonoBehaviour {
 
     void GameWillEnd(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game will end");
-        
         bool winner = this.playerId == e.data["winner"]["id"].str;
         uiController.EndGame(winner);
     }
@@ -207,7 +218,11 @@ public class SyncController : MonoBehaviour {
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
         this.isUserReady = false;
+
         spellsSelected = new List<string>();
+        foreach (User u in usersInRoom) u.status = "waiting";
+        uiController.UserStatusUpdate(usersInRoom);
+    
     }
 
     void PlayerCreated(SocketIOEvent e) {

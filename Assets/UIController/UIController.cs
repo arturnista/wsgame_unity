@@ -14,6 +14,7 @@ public class UIController : MonoBehaviour {
 	private Button joinGameButton;
 	private Button readyButton;
 	private Button startGameButton;
+	private Button selectMapButton;
 	private InputField roomNameInput;
 	private InputField userNameInput;
 	private Image playerColorImage;
@@ -24,6 +25,7 @@ public class UIController : MonoBehaviour {
 	private Text spellName;
 	private Text spellMultiplier;
 	private Text spellIncrement;
+	private Text spellCooldown;
 
 	private List<SpellIcon> spellIcons;
 
@@ -52,6 +54,7 @@ public class UIController : MonoBehaviour {
 			joinGameButton = GameObject.Find("JoinGameButton").GetComponent<Button>();
 			readyButton = GameObject.Find("ReadyButton").GetComponent<Button>();
 			startGameButton = GameObject.Find("StartGameButton").GetComponent<Button>();
+			selectMapButton = GameObject.Find("SelectMapButton").GetComponent<Button>();
 			playerColorImage = GameObject.Find("PlayerColorImage").GetComponent<Image>();
 			usersList = GameObject.Find("UsersList");
 			mapSelectContainer = GameObject.Find("SelectMapContainer");
@@ -64,6 +67,7 @@ public class UIController : MonoBehaviour {
 			spellName = GameObject.Find("SpellName").GetComponent<Text>();
 			spellMultiplier = GameObject.Find("Multiplier").GetComponent<Text>();
 			spellIncrement = GameObject.Find("Increment").GetComponent<Text>();
+			spellCooldown = GameObject.Find("Cooldown").GetComponent<Text>();
 			spellData.SetActive(false);
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
@@ -138,7 +142,10 @@ public class UIController : MonoBehaviour {
 		selectRoomCanvas.SetActive(false);
 		roomCanvas.SetActive(true);
 
-		if(!isOwner) startGameButton.gameObject.SetActive(false);
+		if(!isOwner) {
+			startGameButton.gameObject.SetActive(false);
+			selectMapButton.gameObject.SetActive(false);
+		}
 		roomNameText.text = syncController.GetRoomName();
 	}
 
@@ -160,7 +167,7 @@ public class UIController : MonoBehaviour {
 		ic.Select(idx);
 
 		spellData.SetActive(true);
-		spellName.text = data["spellName"].str;
+		spellName.text = data["spellData"]["name"].str;
 		if(data["spellData"]["type"].str == "offensive") {
 			spellMultiplier.text = (data["spellData"]["knockbackMultiplier"].n * 100) + "%";
 			spellIncrement.text = (data["spellData"]["knockbackIncrement"].n * 100 - 100) + "%";
@@ -168,6 +175,8 @@ public class UIController : MonoBehaviour {
 			spellMultiplier.text = "";
 			spellIncrement.text = "";
 		}
+
+		spellCooldown.text = (data["spellData"]["cooldown"].n / 1000) + " sec.";
 	}
 
 	public void DeselectSpell(string name) {
@@ -202,6 +211,10 @@ public class UIController : MonoBehaviour {
 	public void SetMapName(string mapName) {
 		this.mapName = mapName;
 		mapSelectContainer.SetActive(false);
+	}
+
+	public string GetMapName() {
+		return this.mapName;
 	}
 
 }

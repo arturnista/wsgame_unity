@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class BlockGrid : MonoBehaviour {
 
+	public Color normalColor;
+	public Color destroyedColor;
+
 	private int index;
 
 	private float size;
@@ -30,19 +33,19 @@ public class BlockGrid : MonoBehaviour {
 
 		switch (status) {
 			case "normal": 
-				spriteRenderer.color = Color.white;
+				spriteRenderer.color = normalColor;
 				statusSprite.color = Color.black;
 				break;
 			case "toDestroy": 
-				spriteRenderer.color = Color.white;
+				spriteRenderer.color = normalColor;
 				statusSprite.color = Color.red;
 				break;
 			case "toRevive": 
-				spriteRenderer.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+				spriteRenderer.color = destroyedColor;
 				statusSprite.color = Color.blue;
 				break;
 			case "destroyed": 
-				spriteRenderer.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+				spriteRenderer.color = destroyedColor;
 				statusSprite.color = Color.black;
 				break;
 		}

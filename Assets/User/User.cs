@@ -9,6 +9,7 @@ public class User {
 	public bool isOwner;
 	public string status;
 	public Color color;
+    public List<string> spells;
 
 	public User (JSONObject data, bool isOwner) {
 		this.id = data["id"].str;
@@ -16,5 +17,7 @@ public class User {
 		this.status = data["status"].str;
 		this.name = data["name"].str;
 		this.isOwner = isOwner;
+
+		this.spells = new List<string>();
 	}
 }
