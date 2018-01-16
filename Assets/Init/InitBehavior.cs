@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class InitBehavior : MonoBehaviour {
 	
-	public GameObject syncController;
+	public GameObject localSyncController;
+	public GameObject remoteSyncController;
 
 	public float timeToLoad;
 
@@ -13,10 +14,10 @@ public class InitBehavior : MonoBehaviour {
 
 	void Start () {
 		if(Application.isEditor) {
-			Instantiate(syncController, Vector3.zero, Quaternion.identity);
+			Instantiate(localSyncController, Vector3.zero, Quaternion.identity);
 			SceneManager.LoadScene("Menu");
 		} else {
-			Instantiate(syncController, Vector3.zero, Quaternion.identity);
+			Instantiate(remoteSyncController, Vector3.zero, Quaternion.identity);
 		}
 	}
 	
