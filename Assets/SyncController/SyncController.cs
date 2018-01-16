@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using SocketIO;
+using socket.io;
 
 public class SyncController : MonoBehaviour {
 
@@ -18,13 +18,15 @@ public class SyncController : MonoBehaviour {
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
-	private SocketIOComponent socket;
+	private Socket socket;
 
     public bool isUserInRoom = false;
     public bool isUserRoomOwner = false;
     public bool isUserReady = false;
     private List<User> usersInRoom;
     private Color userColor;
+
+    private int _called;
 
     private string roomName;
     private string userName;
@@ -42,16 +44,17 @@ public class SyncController : MonoBehaviour {
 		playersList = new List<Player>();
         spellsList = new List<Spell>();
         spellsSelected = new List<string>();
-		socket = GetComponent<SocketIOComponent>();
+        string serverUrl = "http://localhost:5002";
+        socket = Socket.Connect(serverUrl);
 
         roomName = "";
         userName = PlayerPrefs.GetString("Name", "");
 	}
 
     public void Start() {
-		socket.On("open", Open);
-        socket.On("error", Error);
-        socket.On("close", Close);
+		socket.On(SystemEvents.connect, Open);
+        // socket.On(SystemEvents.connectError, Error);
+        socket.On(SystemEvents.disconnect, Close);
 
 		socket.On("myuser_info", DefineMyUserInfo);
 		socket.On("myuser_rooms", SetRoomsAvailable);
@@ -76,6 +79,7 @@ public class SyncController : MonoBehaviour {
         socket.On("map_create", CreateMap);
         socket.On("map_update", UpdateMap);
 
+        _called = 0;
 		socket.On("sync", Sync);
 
 		socket.On("gameobject_delete", DeleteObject);
@@ -100,72 +104,79 @@ public class SyncController : MonoBehaviour {
 
     }
 
-	void Open(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Open received: " + e.name + " " + e.data);
+	void Open() {
+		Debug.Log("[SocketIO] Open received");
 	}
 
-	void Error(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Error received: " + e.name + " " + e.data);
+	void Error() {
+		Debug.Log("[SocketIO] Error received");
 	}
 
-	void Close(SocketIOEvent e) {
-		Debug.Log("[SocketIO] Close received: " + e.name + " " + e.data);
+	void Close() {
+		Debug.Log("[SocketIO] Close received");
 	}
 
-	void DefineMyUserInfo(SocketIOEvent e) {
-		Debug.Log("[SocketIO] User created");
-        this.userId = e.data["id"].str;
+	void DefineMyUserInfo(string e) {
+        JSONObject data = new JSONObject(e);
+		Debug.Log("[SocketIO] User created " + data);
+        this.userId = data["id"].str;
 	}
 
-    void SetRoomsAvailable(SocketIOEvent e) {
-		Debug.Log("[SocketIO] " + e.data["rooms"]);
+    void SetRoomsAvailable(string e) {
+        JSONObject data = new JSONObject(e);
+		Debug.Log("[SocketIO] " + data["rooms"]);
         
     }
 
-    void MyUserJoinedRoom(SocketIOEvent e) {
-		Debug.Log("[SocketIO] User joined room");
-        string ownerId = e.data["room"]["owner"]["id"].str;
+    void MyUserJoinedRoom(string e) {
+		Debug.Log("[SocketIO] User joined room " + e);
+        JSONObject data = new JSONObject(e);
+        string ownerId = data["room"]["owner"]["id"].str;
         this.isUserRoomOwner = this.userId == ownerId;
-        this.roomName = e.data["room"]["name"].str;
+        this.roomName = data["room"]["name"].str;
         uiController.MyUserJoinedRoom(this.roomName, this.isUserRoomOwner);
         
         usersInRoom = new List<User>();
-        foreach (JSONObject uData in e.data["room"]["users"].list) {
+        foreach (JSONObject uData in data["room"]["users"].list) {
             User u = new User(uData, ownerId == uData["id"].str);
             usersInRoom.Add(u);            
         }
         uiController.UserStatusUpdate(usersInRoom);
         
-		ColorUtility.TryParseHtmlString(e.data["user"]["color"].str, out this.userColor);
+		ColorUtility.TryParseHtmlString(data["user"]["color"].str, out this.userColor);
         uiController.SetPlayerColor(userColor);
         
         isUserInRoom = true;
     }
 
-    void UserJoinedRoom(SocketIOEvent e) {
-        if(this.userId == e.data["user"]["id"].str) return;
+    void UserJoinedRoom(string e) {
+        JSONObject data = new JSONObject(e);
+        if(this.userId == data["user"]["id"].str) return;
 
-        User user = new User(e.data["user"], e.data["room"]["owner"]["id"].str == e.data["user"]["id"].str);
+        User user = new User(data["user"], data["room"]["owner"]["id"].str == data["user"]["id"].str);
         usersInRoom.Add(user);
 
         uiController.UserStatusUpdate(usersInRoom);
     }
 
-    void UserReady(SocketIOEvent e) {
-        User userInList = usersInRoom.Find(x => x.id == e.data["user"].str);
+    void UserReady(string e) {
+        JSONObject data = new JSONObject(e);
+        User userInList = usersInRoom.Find(x => x.id == data["user"].str);
         userInList.status = "ready";
         uiController.UserStatusUpdate(usersInRoom);
     }
 
-    void UserWaiting(SocketIOEvent e) {
-        User userInList = usersInRoom.Find(x => x.id == e.data["user"].str);
+    void UserWaiting(string e) {
+        JSONObject data = new JSONObject(e);
+        User userInList = usersInRoom.Find(x => x.id == data["user"].str);
         userInList.status = "waiting";
         uiController.UserStatusUpdate(usersInRoom);
     }
 
-    void UserSelectSpell(SocketIOEvent e) {
-        string uid = e.data["user"].str;
-        string spellName = e.data["spellName"].str;
+    void UserSelectSpell(string e) {
+        JSONObject data = new JSONObject(e);
+        string uid = data["user"].str;
+        string spellName = data["spellName"].str;
 
         if(uid != this.userId) {
             User u = usersInRoom.Find(x => x.id == uid);
@@ -174,12 +185,13 @@ public class SyncController : MonoBehaviour {
         }
 
         spellsSelected.Add(spellName);
-        uiController.SelectSpell(e.data, spellsSelected.Count - 1);
+        uiController.SelectSpell(data, spellsSelected.Count - 1);
     }
 
-    void UserDeselectSpell(SocketIOEvent e) {
-        string uid = e.data["user"].str;
-        string spellName = e.data["spellName"].str;
+    void UserDeselectSpell(string e) {
+        JSONObject data = new JSONObject(e);
+        string uid = data["user"].str;
+        string spellName = data["spellName"].str;
 
         if(uid != this.userId) {
             User u = usersInRoom.Find(x => x.id == uid);
@@ -191,29 +203,34 @@ public class SyncController : MonoBehaviour {
         uiController.DeselectSpell(spellName);
     }
 
-    void UserLeftRoom(SocketIOEvent e) {
-        User userInList = usersInRoom.Find(x => x.id == e.data["id"].str);
+    void UserLeftRoom(string e) {
+        JSONObject data = new JSONObject(e);
+        User userInList = usersInRoom.Find(x => x.id == data["id"].str);
         usersInRoom.Remove(userInList);
         uiController.UserStatusUpdate(usersInRoom);
     }
 
-    void GameWillStart(SocketIOEvent e) {
+    void GameWillStart(string e) {
+        JSONObject data = new JSONObject(e);
 		Debug.Log("[SocketIO] Game will start");
         SceneManager.LoadScene("Game");    
     }
 
-    void GameStart(SocketIOEvent e) {
+    void GameStart(string e) {
+        JSONObject data = new JSONObject(e);
 		Debug.Log("[SocketIO] Game start");
         this.isPlayerAlive = true;
     }
 
-    void GameWillEnd(SocketIOEvent e) {
+    void GameWillEnd(string e) {
+        JSONObject data = new JSONObject(e);
 		Debug.Log("[SocketIO] Game will end");
-        bool winner = this.playerId == e.data["winner"]["id"].str;
+        bool winner = this.playerId == data["winner"]["id"].str;
         uiController.EndGame(winner);
     }
 
-    void GameEnd(SocketIOEvent e) {
+    void GameEnd(string e) {
+        JSONObject data = new JSONObject(e);
 		Debug.Log("[SocketIO] Game ended");
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
@@ -225,40 +242,45 @@ public class SyncController : MonoBehaviour {
     
     }
 
-    void PlayerCreated(SocketIOEvent e) {
+    void PlayerCreated(string e) {
+        JSONObject data = new JSONObject(e);
 		Debug.Log("[SocketIO] Player created");
-        this.playerId = e.data["id"].str;
+        this.playerId = data["id"].str;
     }
 
-    void PlayerUseSpell(SocketIOEvent e) {
-        string spellName = e.data["name"].str;
+    void PlayerUseSpell(string e) {
+        JSONObject data = new JSONObject(e);
+        string spellName = data["name"].str;
 
-        float xPos = e.data["position"]["x"].n;
-        float yPos = e.data["position"]["y"].n;
+        float xPos = data["position"]["x"].n;
+        float yPos = data["position"]["y"].n;
         Vector3 position = new Vector2(xPos, yPos);
 
         switch (spellName) {
             case "explosion":
                 Spell s = Instantiate(explosionPrefab, position, Quaternion.identity).GetComponent<Spell>();
-                s.SetData(e.data);
+                s.SetData(data);
                 break;
         }
     }
 
-    void CreateMap(SocketIOEvent e) {
-        mapController.CreateMap(e.data);
+    void CreateMap(string e) {
+        JSONObject data = new JSONObject(e);
+        mapController.CreateMap(data);
     }
 
-    void UpdateMap(SocketIOEvent e) {
+    void UpdateMap(string e) {
+        JSONObject data = new JSONObject(e);
         if(!isGameRunning) return;
         
-        mapController.UpdateMap(e.data);
+        mapController.UpdateMap(data);
     }
 
-    void Sync(SocketIOEvent e) {
+    void Sync(string e) {
+        JSONObject data = new JSONObject(e);
         if(!isGameRunning) return;
 
-        List<JSONObject> receivedPlayersList = e.data["players"].list;
+        List<JSONObject> receivedPlayersList = data["players"].list;
         for (int i = 0; i < receivedPlayersList.Count; i++) {
             JSONObject player = receivedPlayersList[i];
 
@@ -278,7 +300,7 @@ public class SyncController : MonoBehaviour {
             }
         }
 
-        List<JSONObject> receivedSpellsList = e.data["spells"].list;
+        List<JSONObject> receivedSpellsList = data["spells"].list;
         for (int i = 0; i < receivedSpellsList.Count; i++)
         {
             JSONObject spell = receivedSpellsList[i];
@@ -304,10 +326,11 @@ public class SyncController : MonoBehaviour {
         }
     }
 
-	void DeleteObject(SocketIOEvent e) {
+	void DeleteObject(string e) {
+        JSONObject data = new JSONObject(e);
         if(!isGameRunning) return;
 
-		Spell spellOnList = spellsList.Find(x => x.id == e.data["id"].str);
+		Spell spellOnList = spellsList.Find(x => x.id == data["id"].str);
 		if(spellOnList) {
             spellsList.Remove(spellOnList);
             spellOnList.Destroy();
@@ -335,7 +358,7 @@ public class SyncController : MonoBehaviour {
         JSONObject data = new JSONObject();
         data.AddField("name", roomName);
         data.AddField("userName", userName);
-        socket.Emit("room_create", data); 
+        socket.EmitJson("room_create", data.ToString()); 
 
         PlayerPrefs.SetString("Name", userName);
     }
@@ -344,7 +367,7 @@ public class SyncController : MonoBehaviour {
         JSONObject data = new JSONObject();
         data.AddField("name", roomName);
         data.AddField("userName", userName);
-        socket.Emit("room_join", data);  
+        socket.EmitJson("room_join", data.ToString());  
 
         PlayerPrefs.SetString("Name", userName);     
     }
@@ -362,21 +385,21 @@ public class SyncController : MonoBehaviour {
 		JSONObject data = new JSONObject();
         data.AddField("spellName", spellName);
 
-        socket.Emit("user_select_spell", data);
+        socket.EmitJson("user_select_spell", data.ToString());
     }
 
     public void DeselectSpell(string spellName) {
 		JSONObject data = new JSONObject();
         data.AddField("spellName", spellName);
 
-        socket.Emit("user_deselect_spell", data);
+        socket.EmitJson("user_deselect_spell", data.ToString());
     }
 
     public void StartGame(string mapName) {
 		JSONObject data = new JSONObject();
         if(mapName.Length > 0) data.AddField("map", mapName);
 
-        socket.Emit("game_start", data);
+        socket.EmitJson("game_start", data.ToString());
     }
 
     public void MovePlayer(Vector2 position) {
@@ -391,7 +414,7 @@ public class SyncController : MonoBehaviour {
 		data.AddField("position", positionJson);
         data.AddField("id", this.playerId);
 
-        socket.Emit("player_move", data);
+        socket.EmitJson("player_move", data.ToString());
     }
 
     public void UseSpell(string spellName, Vector2 position, Vector2 direction) {
@@ -412,7 +435,7 @@ public class SyncController : MonoBehaviour {
         data.AddField("position", positionJson);
         data.AddField("direction", directionJson);
 
-        socket.Emit("player_spell_" + spellName, data);
+        socket.EmitJson("player_spell_" + spellName, data.ToString());
     }
 
 }
