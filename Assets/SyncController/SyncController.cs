@@ -231,11 +231,9 @@ public class SyncController : MonoBehaviour {
     }
 
     void PlayerUseSpell(SocketIOEvent e) {
-        string spellName = e.data["name"].str;
+        string spellName = e.data["spellName"].str;
 
-        float xPos = e.data["position"]["x"].n;
-        float yPos = e.data["position"]["y"].n;
-        Vector3 position = new Vector2(xPos, yPos);
+        Vector3 position = JSONTemplates.ToVector2(e.data["position"]);
 
         switch (spellName) {
             case "explosion":
@@ -285,18 +283,10 @@ public class SyncController : MonoBehaviour {
             Spell spellOnList = spellsList.Find(x => x.id == spell["id"].str);
             if (spellOnList == null) {
                 if(spell["type"].str == "fireball") {
-                    float xPos = spell["position"]["x"].n;
-                    float yPos = spell["position"]["y"].n;
-                    
-                    GameObject go = Instantiate(fireballPrefab, new Vector2(xPos, yPos), Quaternion.identity) as GameObject;
-                    spellOnList = go.GetComponent<Spell>();
+                    spellOnList = Instantiate(fireballPrefab, JSONTemplates.ToVector2(spell["position"]), Quaternion.identity).GetComponent<Spell>();
                 }
                 if(spell["type"].str == "follower") {
-                    float xPos = spell["position"]["x"].n;
-                    float yPos = spell["position"]["y"].n;
-                    
-                    GameObject go = Instantiate(followerPrefab, new Vector2(xPos, yPos), Quaternion.identity) as GameObject;
-                    spellOnList = go.GetComponent<Spell>();
+                    spellOnList = Instantiate(followerPrefab, JSONTemplates.ToVector2(spell["position"]), Quaternion.identity).GetComponent<Spell>();
                 }
                 spellsList.Add(spellOnList);
             }
