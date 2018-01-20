@@ -24,8 +24,11 @@ public class UIController : MonoBehaviour {
 	private GameObject spellData;
 	private Text spellName;
 	private Text spellMultiplier;
+	private GameObject spellMultiplierIcon;
 	private Text spellIncrement;
+	private GameObject spellIncrementIcon;
 	private Text spellCooldown;
+	private Text spellDescription;
 
 	private List<SpellIcon> spellIcons;
 
@@ -68,6 +71,10 @@ public class UIController : MonoBehaviour {
 			spellMultiplier = GameObject.Find("Multiplier").GetComponent<Text>();
 			spellIncrement = GameObject.Find("Increment").GetComponent<Text>();
 			spellCooldown = GameObject.Find("Cooldown").GetComponent<Text>();
+			spellDescription = GameObject.Find("SpellDescription").GetComponent<Text>();
+			spellMultiplierIcon = GameObject.Find("MultiplierIcon");
+			spellIncrementIcon = GameObject.Find("IncrementIcon");
+
 			spellData.SetActive(false);
 
 			createGameButton.onClick.AddListener(syncController.CreateGame);
@@ -171,12 +178,17 @@ public class UIController : MonoBehaviour {
 		if(data["spellData"]["type"].str == "offensive") {
 			spellMultiplier.text = (data["spellData"]["knockbackMultiplier"].n * 100) + "%";
 			spellIncrement.text = (data["spellData"]["knockbackIncrement"].n * 100 - 100) + "%";
+			spellMultiplierIcon.SetActive(true);
+			spellIncrementIcon.SetActive(true);
 		} else {
 			spellMultiplier.text = "";
 			spellIncrement.text = "";
+			spellMultiplierIcon.SetActive(false);
+			spellIncrementIcon.SetActive(false);
 		}
 
 		spellCooldown.text = (data["spellData"]["cooldown"].n / 1000) + " sec.";
+		spellDescription.text = data["spellData"]["description"].str;
 	}
 
 	public void DeselectSpell(string name) {
