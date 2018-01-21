@@ -264,6 +264,7 @@ public class SyncController : MonoBehaviour {
 
     void PlayerUseSpell(SocketIOEvent e) {
         string spellName = e.data["spellName"].str;
+        gameUIController.UseSpell(spellName);
 
         Vector3 position = JSONTemplates.ToVector2(e.data["position"]);
 
@@ -400,6 +401,15 @@ public class SyncController : MonoBehaviour {
         data.AddField("spellName", spellName);
 
         socket.Emit("user_deselect_spell", data);
+    }
+
+    public List<SpellItem> GetSpellsSelected() {
+        List<SpellItem> spellSel = new List<SpellItem>();
+        foreach(string name in spellsSelected) {
+            SpellItem s = spellsController.spells.Find(x => name == x.name);
+            spellSel.Add(s);
+        }
+        return spellSel;
     }
 
     public void StartGame(string mapName) {

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class GameUIController : MonoBehaviour {
 
+	public GameObject spellIconPrefab;
+
 	private SyncController syncController;
 	
 	private string mapName;
@@ -12,6 +14,9 @@ public class GameUIController : MonoBehaviour {
 	private Player player;
 	private Text playerInfoText;
 	private Image healthbarImage;
+
+	private Transform spellsListCanvas;
+	private List<GameSpellIcon> spellIcons;
 
 	private GameObject winnerCanvas;
 	private GameObject loserCanvas;
@@ -21,8 +26,18 @@ public class GameUIController : MonoBehaviour {
 
 		playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
 		healthbarImage = GameObject.Find("HealthbarImage").GetComponent<Image>();
+		spellsListCanvas = GameObject.Find("SpellsListCanvas").transform;
 		winnerCanvas = transform.Find("WinnerCanvas").gameObject;
 		loserCanvas = transform.Find("LoserCanvas").gameObject;
+		
+		spellIcons = new List<GameSpellIcon>();
+		foreach(SpellItem spellItem in syncController.GetSpellsSelected()) {
+			GameSpellIcon spellIcon = Instantiate(spellIconPrefab).GetComponent<GameSpellIcon>();
+			spellIcon.SetData(spellItem);
+			spellIcon.transform.SetParent(spellsListCanvas);
+
+			spellIcons.Add(spellIcon);
+		}
 	}
 	
 	// Update is called once per frame
@@ -42,6 +57,11 @@ public class GameUIController : MonoBehaviour {
 			}
 		}
 		
+	}
+
+	public void UseSpell(string spellName) {
+		GameSpellIcon sIcon = spellIcons.Find(x => x.spellName == spellName);
+		sIcon.UseSpell();
 	}
 
 	public void EndGame(bool win) {
