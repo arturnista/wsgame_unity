@@ -9,7 +9,7 @@ public class MenuUIController : MonoBehaviour {
 	public GameObject spellIconPrefab;
 
 	private SyncController syncController;
-    private SpellsList spellsController;
+    private SpellsController spellsController;
 
 	private Button createGameButton;
 	private Button joinGameButton;
@@ -43,7 +43,7 @@ public class MenuUIController : MonoBehaviour {
 
 	void Awake () {
 		syncController = GameObject.FindObjectOfType<SyncController>();
-        spellsController = GameObject.FindObjectOfType<SpellsList>();
+        spellsController = GameObject.FindObjectOfType<SpellsController>();
 
 		selectRoomCanvas = transform.Find("SelectRoomCanvas").gameObject;
 		roomCanvas = transform.Find("RoomCanvas").gameObject;

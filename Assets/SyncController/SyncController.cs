@@ -20,7 +20,7 @@ public class SyncController : MonoBehaviour {
     private MapController mapController;
     private CameraBehavior cameraBehavior;
     private ActionController actionController;
-    private SpellsList spellsController;
+    private SpellsController spellsController;
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
@@ -42,7 +42,7 @@ public class SyncController : MonoBehaviour {
 	public void Awake() {
         DontDestroyOnLoad(this.gameObject);
 
-        spellsController = GameObject.FindObjectOfType<SpellsList>();
+        spellsController = GameObject.FindObjectOfType<SpellsController>();
 
 		playersList = new List<Player>();
         spellsList = new List<Spell>();

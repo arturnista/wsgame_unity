@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpellsList : MonoBehaviour {
+public class SpellsController : MonoBehaviour {
 
 	public List<SpellItem> spells;
 
