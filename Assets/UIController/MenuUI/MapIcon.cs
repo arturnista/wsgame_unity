@@ -8,12 +8,12 @@ public class MapIcon : MonoBehaviour {
 
 	public string mapName;
 
-	private UIController uiController;
+	private MenuUIController menuUIController;
 	private Button button;
 	private Image mapBackground;
 
 	void Awake () {
-		uiController = GameObject.FindObjectOfType<UIController>();
+		menuUIController = GameObject.FindObjectOfType<MenuUIController>();
 		button = GetComponent<Button>();
 		button.onClick.AddListener(this.SelectMap);
 
@@ -23,12 +23,12 @@ public class MapIcon : MonoBehaviour {
 	void Update() {
 		if(!this.gameObject.activeSelf) return;
 
-		if(uiController.GetMapName() == mapName) this.Active();
+		if(menuUIController.GetMapName() == mapName) this.Active();
 		else this.Deactive();
 	}
 	
 	void SelectMap() {
-		uiController.SetMapName(mapName);
+		menuUIController.SetMapName(mapName);
 	}
 
 	void Active() {
