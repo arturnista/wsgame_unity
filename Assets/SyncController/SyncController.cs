@@ -212,13 +212,18 @@ public class SyncController : MonoBehaviour {
 
     void GameEnd(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game ended");
+        
+        foreach (JSONObject uData in e.data["users"].list) {
+            User u = usersInRoom.Find(x => x.id == uData["id"].str);
+            if(u != null) u.Update(uData);
+        }
+        
         this.isGameRunning = false;
         SceneManager.LoadScene("Menu");    
 
         spellsSelected = new List<string>();
-        foreach (User u in usersInRoom) u.status = "waiting";
         menuUIController.UserStatusUpdate(usersInRoom);
-    
+
     }
 
     void PlayerCreated(SocketIOEvent e) {

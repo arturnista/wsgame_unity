@@ -138,6 +138,7 @@ public class MenuUIController : MonoBehaviour {
 			if(u.status == "ready") userLine.transform.Find("StatusColor").GetComponent<Image>().color = new Color(0.1f, 0.36f, 0.13f, 0.4f);
 			else userLine.transform.Find("StatusColor").GetComponent<Image>().color = new Color(0, 0, 0, 0);
 			userLine.transform.Find("UserName").GetComponent<Text>().text = u.name;
+			userLine.transform.Find("WinCount").GetComponent<Text>().text = u.winCount.ToString();
 			userLine.transform.Find("UserColor").GetComponent<Image>().color = u.color;
 			if(!u.isOwner) userLine.transform.Find("OwnerImage").gameObject.SetActive(false);
 		}
