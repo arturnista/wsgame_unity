@@ -9,6 +9,7 @@ public class SyncController : MonoBehaviour {
 	public GameObject playerPrefab;
     public GameObject fireballPrefab;
     public GameObject followerPrefab;
+    public GameObject boomerangPrefab;
     public GameObject explosionPrefab;
 
     private GameUIController gameUIController;
@@ -283,11 +284,13 @@ public class SyncController : MonoBehaviour {
             JSONObject spell = receivedSpellsList[i];
             Spell spellOnList = spellsList.Find(x => x.id == spell["id"].str);
             if (spellOnList == null) {
-                if(spell["type"].str == "fireball") {
+                string spellType = spell["type"].str;
+                if(spellType == "fireball") {
                     spellOnList = Instantiate(fireballPrefab, JSONTemplates.ToVector2(spell["position"]), Quaternion.identity).GetComponent<Spell>();
-                }
-                if(spell["type"].str == "follower") {
+                } else if(spellType == "follower") {
                     spellOnList = Instantiate(followerPrefab, JSONTemplates.ToVector2(spell["position"]), Quaternion.identity).GetComponent<Spell>();
+                } else if(spellType == "boomerang") {
+                    spellOnList = Instantiate(boomerangPrefab, JSONTemplates.ToVector2(spell["position"]), Quaternion.identity).GetComponent<Spell>();
                 }
                 spellsList.Add(spellOnList);
             }

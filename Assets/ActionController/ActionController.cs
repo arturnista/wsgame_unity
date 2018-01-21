@@ -88,6 +88,7 @@ public class ActionController : MonoBehaviour {
 			case "fireball": 
 			case "explosion": 
 			case "blink": 
+			case "boomerang": 
 				nextAction = Action.Spell;
 				actionSpellName = spellName;
 				Cursor.SetCursor(aimCursorTexture, new Vector2(0.5f, 0.5f), CursorMode.Auto);
