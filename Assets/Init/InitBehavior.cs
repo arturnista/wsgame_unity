@@ -7,12 +7,14 @@ public class InitBehavior : MonoBehaviour {
 	
 	public GameObject localSyncController;
 	public GameObject remoteSyncController;
+	public GameObject spellsList;
 
 	public float timeToLoad;
 
 	private float timePassed;
 
 	void Start () {
+		Instantiate(spellsList, Vector3.zero, Quaternion.identity);
 		if(Application.isEditor) {
 			Instantiate(localSyncController, Vector3.zero, Quaternion.identity);
 			SceneManager.LoadScene("Menu");

@@ -6,8 +6,10 @@ using UnityEngine.UI;
 public class MenuUIController : MonoBehaviour {
 
 	public GameObject userLinePrefab;
+	public GameObject spellIconPrefab;
 
 	private SyncController syncController;
+    private SpellsList spellsController;
 
 	private Button createGameButton;
 	private Button joinGameButton;
@@ -20,6 +22,8 @@ public class MenuUIController : MonoBehaviour {
 	private GameObject usersList;
 	private Text roomNameText;
 	private GameObject mapSelectContainer;
+	private Transform offensiveSpellsList;
+	private Transform defensiveSpellsList;
 	private GameObject spellData;
 	private Text spellName;
 	private Text spellMultiplier;
@@ -30,6 +34,7 @@ public class MenuUIController : MonoBehaviour {
 	private Text spellDescription;
 
 	private List<SpellIcon> spellIcons;
+	private List<User> lastUsers;
 
 	private GameObject selectRoomCanvas;
 	private GameObject roomCanvas;
@@ -38,6 +43,7 @@ public class MenuUIController : MonoBehaviour {
 
 	void Awake () {
 		syncController = GameObject.FindObjectOfType<SyncController>();
+        spellsController = GameObject.FindObjectOfType<SpellsList>();
 
 		selectRoomCanvas = transform.Find("SelectRoomCanvas").gameObject;
 		roomCanvas = transform.Find("RoomCanvas").gameObject;
@@ -54,11 +60,11 @@ public class MenuUIController : MonoBehaviour {
 		readyButton = roomCanvas.transform.Find("ReadyButton").GetComponent<Button>();
 		playerColorImage = roomCanvas.transform.Find("PlayerColorImage").GetComponent<Image>();
 		usersList = roomCanvas.transform.Find("UsersList").gameObject;
+		offensiveSpellsList = roomCanvas.transform.Find("OffensiveSpellsList");
+		defensiveSpellsList = roomCanvas.transform.Find("DefensiveSpellsList");
 		roomNameText = roomCanvas.transform.Find("RoomNameText").GetComponent<Text>();
 		mapSelectContainer = roomCanvas.transform.Find("SelectMapContainer").gameObject;
 		mapSelectContainer.SetActive(false);
-		SpellIcon[] iconsArray = roomCanvas.GetComponentsInChildren<SpellIcon>();
-		spellIcons = new List<SpellIcon>(iconsArray);
 
 		spellData = roomCanvas.transform.Find("SpellData").gameObject;
 		spellName = spellData.transform.Find("SpellName").GetComponent<Text>();
@@ -122,16 +128,19 @@ public class MenuUIController : MonoBehaviour {
 			selectMapButton.gameObject.SetActive(false);
 		}
 		roomNameText.text = syncController.GetRoomName();
+
+		this.SpellsStatusUpdate();
 	}
 
 	public void UserStatusUpdate(List<User> users) {
-		if(users == null) return;
-		
-        foreach (Transform child in usersList.transform) {
+		if(users != null) lastUsers = users;
+		if(lastUsers == null) return;
+        
+		foreach (Transform child in usersList.transform) {
 			Destroy(child.gameObject);
 		}
 
-		foreach(User u in users) {
+		foreach(User u in lastUsers) {
 			GameObject userLine = Instantiate(userLinePrefab, Vector3.zero, Quaternion.identity) as GameObject;
 			userLine.transform.SetParent(usersList.transform);
 
@@ -141,6 +150,25 @@ public class MenuUIController : MonoBehaviour {
 			userLine.transform.Find("WinCount").GetComponent<Text>().text = u.winCount.ToString();
 			userLine.transform.Find("UserColor").GetComponent<Image>().color = u.color;
 			if(!u.isOwner) userLine.transform.Find("OwnerImage").gameObject.SetActive(false);
+		}
+	}
+
+	public void SpellsStatusUpdate() {
+		foreach (Transform child in offensiveSpellsList) {
+			Destroy(child.gameObject);
+		}
+		foreach (Transform child in defensiveSpellsList) {
+			Destroy(child.gameObject);
+		}
+
+		spellIcons = new List<SpellIcon>();
+		foreach(SpellItem spell in spellsController.spells) {
+			SpellIcon icon = Instantiate(spellIconPrefab).GetComponent<SpellIcon>();
+			icon.SetData(spell);
+			if(spell.type == "offensive") icon.transform.SetParent(offensiveSpellsList);
+			else icon.transform.SetParent(defensiveSpellsList);
+
+			spellIcons.Add(icon);
 		}
 	}
 
@@ -166,14 +194,17 @@ public class MenuUIController : MonoBehaviour {
 	}
 
 	public void SelectSpell(JSONObject data, int idx) {
-		SpellIcon ic = spellIcons.Find(x => x.name == data["spellName"].str);
+
+		SpellIcon ic = spellIcons.Find(x => x.spellName == data["spellName"].str);
 		ic.Select(idx);
 
+		SpellItem sData = spellsController.spells.Find(x => x.name == data["spellName"].str);
+
 		spellData.SetActive(true);
-		spellName.text = data["spellData"]["name"].str;
-		if(data["spellData"]["type"].str == "offensive") {
-			spellMultiplier.text = (data["spellData"]["knockbackMultiplier"].n * 100) + "%";
-			spellIncrement.text = (data["spellData"]["knockbackIncrement"].n * 100 - 100) + "%";
+		spellName.text = sData.showName;
+		if(sData.type == "offensive") {
+			spellMultiplier.text = (sData.knockbackMultiplier * 100) + "%";
+			spellIncrement.text = (sData.knockbackIncrement * 100 - 100) + "%";
 			spellMultiplierIcon.SetActive(true);
 			spellIncrementIcon.SetActive(true);
 		} else {
@@ -183,12 +214,12 @@ public class MenuUIController : MonoBehaviour {
 			spellIncrementIcon.SetActive(false);
 		}
 
-		spellCooldown.text = (data["spellData"]["cooldown"].n / 1000) + " sec.";
-		spellDescription.text = data["spellData"]["description"].str;
+		spellCooldown.text = (sData.cooldown / 1000) + " sec.";
+		spellDescription.text = sData.description;
 	}
 
-	public void DeselectSpell(string name) {
-		SpellIcon ic = spellIcons.Find(x => x.name == name);
+	public void DeselectSpell(string spellName) {
+		SpellIcon ic = spellIcons.Find(x => x.spellName == spellName);
 		ic.Deselect();
 	}
 

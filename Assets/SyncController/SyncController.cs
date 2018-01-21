@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using SocketIO;
+using UnityEngine.Networking;
 
 public class SyncController : MonoBehaviour {
+
+    private string serverUrl;
 
 	public GameObject playerPrefab;
     public GameObject fireballPrefab;
@@ -17,6 +20,7 @@ public class SyncController : MonoBehaviour {
     private MapController mapController;
     private CameraBehavior cameraBehavior;
     private ActionController actionController;
+    private SpellsList spellsController;
 
 	private List<Player> playersList;
     private List<Spell> spellsList;
@@ -38,6 +42,8 @@ public class SyncController : MonoBehaviour {
 	public void Awake() {
         DontDestroyOnLoad(this.gameObject);
 
+        spellsController = GameObject.FindObjectOfType<SpellsList>();
+
 		playersList = new List<Player>();
         spellsList = new List<Spell>();
         spellsSelected = new List<string>();
@@ -45,6 +51,7 @@ public class SyncController : MonoBehaviour {
 
         roomName = "";
         userName = PlayerPrefs.GetString("Name", "");
+        serverUrl = socket.url;
 	}
 
     public void Start() {
@@ -53,7 +60,6 @@ public class SyncController : MonoBehaviour {
         socket.On("close", Close);
 
 		socket.On("myuser_info", DefineMyUserInfo);
-		socket.On("myuser_rooms", SetRoomsAvailable);
         socket.On("myuser_joined_room", MyUserJoinedRoom);
 
         socket.On("user_joined_room", UserJoinedRoom);
@@ -80,6 +86,35 @@ public class SyncController : MonoBehaviour {
 		socket.On("gameobject_delete", DeleteObject);
 
         SceneManager.activeSceneChanged += OnChangeLevel;
+        StartCoroutine(GetSpells());
+        StartCoroutine(GetRooms());
+    }
+ 
+    IEnumerator GetSpells() {
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + "/spells");
+        yield return www.SendWebRequest();
+ 
+        if(www.isNetworkError || www.isHttpError) {
+            Debug.Log(www.error);
+        } else {
+            JSONObject spells = new JSONObject(www.downloadHandler.text);
+            foreach (string sKey in spells.keys) {
+                JSONObject sData = spells[sKey];
+                spellsController.SetSpellData(sKey, sData);
+            }
+        }
+    }
+ 
+    IEnumerator GetRooms() {
+        UnityWebRequest www = UnityWebRequest.Get(serverUrl + "/rooms");
+        yield return www.SendWebRequest();
+ 
+        if(www.isNetworkError || www.isHttpError) {
+            Debug.Log(www.error);
+        } else {
+            JSONObject rooms = new JSONObject(www.downloadHandler.text);
+            Debug.Log("Rooms: " + rooms);
+        }
     }
 
     private void OnChangeLevel(Scene origin, Scene current) {
@@ -116,11 +151,6 @@ public class SyncController : MonoBehaviour {
 		Debug.Log("[SocketIO] User created");
         this.userId = e.data["id"].str;
 	}
-
-    void SetRoomsAvailable(SocketIOEvent e) {
-		Debug.Log("[SocketIO] " + e.data["rooms"]);
-        
-    }
 
     void MyUserJoinedRoom(SocketIOEvent e) {
 		Debug.Log("[SocketIO] User joined room");

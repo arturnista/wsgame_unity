@@ -57,6 +57,7 @@ namespace SocketIO
 
 		#region Private Properties
 
+		private string wsUrl;
 		private volatile bool connected;
 		private volatile bool thPinging;
 		private volatile bool thPong;
@@ -99,7 +100,8 @@ namespace SocketIO
 			sid = null;
 			packetId = 0;
 
-			ws = new WebSocket(url);
+			wsUrl = url.Replace("https", "ws").Replace("http", "ws") + "/socket.io/?EIO=4&transport=websocket";
+			ws = new WebSocket(wsUrl);
 			ws.OnOpen += OnOpen;
 			ws.OnMessage += OnMessage;
 			ws.OnError += OnError;

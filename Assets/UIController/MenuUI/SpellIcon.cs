@@ -5,13 +5,14 @@ using UnityEngine.UI;
 
 public class SpellIcon : MonoBehaviour {
 
-	public string name;
+	public string spellName;
 
 	private bool isSelected;
 
 	private SyncController syncController;
 	private GameObject selectImage;
 
+	private Image image;
 	private Button button;
 	private Text selectText;
 
@@ -25,14 +26,21 @@ public class SpellIcon : MonoBehaviour {
 		selectText.gameObject.SetActive(false);
 		isSelected = false;
 
+		image = transform.Find("SpellImage").GetComponent<Image>();
+
 		syncController = GameObject.FindObjectOfType<SyncController>();
+	}
+
+	public void SetData(SpellItem spell) {
+		spellName = spell.name;
+		image.sprite = spell.image;
 	}
 
 	void Toggle() {
 		if(!isSelected) {
-			syncController.SelectSpell(name);
+			syncController.SelectSpell(spellName);
 		} else {
-			syncController.DeselectSpell(name);
+			syncController.DeselectSpell(spellName);
 		}
 	}
 
