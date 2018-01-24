@@ -6,8 +6,10 @@ using UnityEngine.UI;
 public class GameUIController : MonoBehaviour {
 
 	public GameObject spellIconPrefab;
+	public GameObject endSpellIconPrefab;
 
 	private SyncController syncController;
+	private SpellsController spellsController;
 	
 	private string mapName;
 
@@ -16,19 +18,20 @@ public class GameUIController : MonoBehaviour {
 	private Image healthbarImage;
 
 	private Transform spellsListCanvas;
+	private Transform endSpellsListCanvas;
 	private List<GameSpellIcon> spellIcons;
 
-	private GameObject winnerCanvas;
-	private GameObject loserCanvas;
+	private GameObject endCanvas;
 
 	void Awake () {
 		syncController = GameObject.FindObjectOfType<SyncController>();
+		spellsController = GameObject.FindObjectOfType<SpellsController>();
 
 		playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
 		healthbarImage = GameObject.Find("HealthbarImage").GetComponent<Image>();
 		spellsListCanvas = GameObject.Find("SpellsListCanvas").transform;
-		winnerCanvas = transform.Find("WinnerCanvas").gameObject;
-		loserCanvas = transform.Find("LoserCanvas").gameObject;
+		endCanvas = transform.Find("EndCanvas").gameObject;
+		endCanvas.SetActive(false);
 		
 		spellIcons = new List<GameSpellIcon>();
 		foreach(SpellItem spellItem in syncController.GetSpellsSelected()) {
@@ -66,18 +69,26 @@ public class GameUIController : MonoBehaviour {
 
 	public void EndGame(bool win) {
 		Text textName;
+		endCanvas.SetActive(true);
 		if(win) {
-			winnerCanvas.SetActive(true);
-			textName = winnerCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+			textName = endCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+			endCanvas.transform.Find("Panel/WinText").gameObject.SetActive(true);
 		} else {
-			loserCanvas.SetActive(true);
-			textName = loserCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+			textName = endCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+			endCanvas.transform.Find("Panel/LoseText").gameObject.SetActive(true);
 		}
 
 		User user = syncController.GetUser();
 		textName.text = user.name;
+
+		endSpellsListCanvas = endCanvas.transform.Find("Panel/SpellsCanvas/SpellsList");
 		foreach(UserSpell us in user.spells) {
-			Debug.Log(us.name + " " + us.uses);
+			GameObject spell = Instantiate(endSpellIconPrefab) as GameObject;
+			spell.transform.SetParent(endSpellsListCanvas);
+			SpellItem sItem = spellsController.GetSpellItem(us.name);
+			spell.transform.Find("SpellName").GetComponent<Text>().text = sItem.showName;
+			spell.transform.Find("SpellIcon").GetComponent<Image>().sprite = sItem.image;
+			spell.transform.Find("SpellUses").GetComponent<Text>().text = us.uses.ToString();
 		}
 	}
 

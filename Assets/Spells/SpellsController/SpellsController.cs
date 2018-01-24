@@ -31,4 +31,8 @@ public class SpellsController : MonoBehaviour {
 		if(data.HasField("knockbackMultiplier")) spell.knockbackMultiplier = data["knockbackMultiplier"].n;
 		if(data.HasField("knockbackIncrement")) spell.knockbackIncrement = data["knockbackIncrement"].n;
 	}
+
+	public SpellItem GetSpellItem(string spellName) {
+		return spells.Find(x => x.name == spellName);
+	}
 }
