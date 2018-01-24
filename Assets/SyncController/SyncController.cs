@@ -195,28 +195,26 @@ public class SyncController : MonoBehaviour {
         string uid = e.data["user"].str;
         string spellName = e.data["spellName"].str;
 
-        if(uid != this.userId) {
-            User u = usersInRoom.Find(x => x.id == uid);
-            u.spells.Add(spellName);
-            return;
+        if(uid == this.userId) {
+            spellsSelected.Add(spellName);
+            menuUIController.SelectSpell(e.data, spellsSelected.Count - 1);
         }
 
-        spellsSelected.Add(spellName);
-        menuUIController.SelectSpell(e.data, spellsSelected.Count - 1);
+        User u = usersInRoom.Find(x => x.id == uid);
+        u.AddSpell(spellName);
     }
 
     void UserDeselectSpell(SocketIOEvent e) {
         string uid = e.data["user"].str;
         string spellName = e.data["spellName"].str;
 
-        if(uid != this.userId) {
-            User u = usersInRoom.Find(x => x.id == uid);
-            u.spells.Remove(spellName);
-            return;
+        if(uid == this.userId) {
+            spellsSelected.Remove(spellName);
+            menuUIController.DeselectSpell(spellName);
         }
-        
-        spellsSelected.Remove(spellName);
-        menuUIController.DeselectSpell(spellName);
+
+        User u = usersInRoom.Find(x => x.id == uid);
+        u.RemoveSpell(spellName);
     }
 
     void UserLeftRoom(SocketIOEvent e) {
@@ -246,7 +244,7 @@ public class SyncController : MonoBehaviour {
         
         foreach (JSONObject uData in e.data["users"].list) {
             User u = usersInRoom.Find(x => x.id == uData["id"].str);
-            if(u != null) u.Update(uData);
+            if(u != null) u.Reset(uData);
         }
         
         this.isGameRunning = false;
@@ -267,6 +265,10 @@ public class SyncController : MonoBehaviour {
         gameUIController.UseSpell(spellName);
 
         Vector3 position = JSONTemplates.ToVector2(e.data["position"]);
+
+        if(GetPlayer().id == e.data["player"]["id"].str) {
+            GetUser().UseSpell(spellName);
+        }
 
         switch (spellName) {
             case "explosion":

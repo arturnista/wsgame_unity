@@ -65,7 +65,6 @@ public class ActionController : MonoBehaviour {
         if(player == null) return;
         
 		Vector3 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		Vector3 direction = position - player.transform.position;
 
 		switch(nextAction) {
 			case Action.Move:

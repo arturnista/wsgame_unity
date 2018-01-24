@@ -65,8 +65,20 @@ public class GameUIController : MonoBehaviour {
 	}
 
 	public void EndGame(bool win) {
-		if(win) winnerCanvas.SetActive(true);
-		else loserCanvas.SetActive(true);
+		Text textName;
+		if(win) {
+			winnerCanvas.SetActive(true);
+			textName = winnerCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+		} else {
+			loserCanvas.SetActive(true);
+			textName = loserCanvas.transform.Find("Panel/PlayerNameText").GetComponent<Text>();
+		}
+
+		User user = syncController.GetUser();
+		textName.text = user.name;
+		foreach(UserSpell us in user.spells) {
+			Debug.Log(us.name + " " + us.uses);
+		}
 	}
 
 }
