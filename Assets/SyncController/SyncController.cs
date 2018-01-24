@@ -262,14 +262,13 @@ public class SyncController : MonoBehaviour {
 
     void PlayerUseSpell(SocketIOEvent e) {
         string spellName = e.data["spellName"].str;
-        gameUIController.UseSpell(spellName);
 
-        Vector3 position = JSONTemplates.ToVector2(e.data["position"]);
-
-        if(GetPlayer().id == e.data["player"]["id"].str) {
-            GetUser().UseSpell(spellName);
+        if(this.GetPlayer().id == e.data["player"]["id"].str) {
+            gameUIController.UseSpell(spellName);
+            this.GetUser().UseSpell(spellName);
         }
 
+        Vector3 position = JSONTemplates.ToVector2(e.data["position"]);
         switch (spellName) {
             case "explosion":
                 Spell s = Instantiate(explosionPrefab, position, Quaternion.identity).GetComponent<Spell>();

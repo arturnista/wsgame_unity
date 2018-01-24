@@ -45,7 +45,7 @@ public class ExplosionDestroy : Spell {
 	public override void SetData(JSONObject data) {
 		base.SetData(data);
 
-		fullSize = data["radius"].n;
+		fullSize = data["radius"].n * 2;
 		initialSize = 0f;
 		currentSize = initialSize;
 
