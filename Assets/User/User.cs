@@ -46,22 +46,16 @@ public class User {
 	}
 
 	public void AddSpell(string name) {
-		Debug.Log("Nome: " + name);
-
 		UserSpell us = spells.Find(x => x.name == name);
 		if(us == null) spells.Add( new UserSpell(name) );
 	}
 
 	public void RemoveSpell(string name) {
-		Debug.Log("Nome: " + name);
-
 		UserSpell us = spells.Find(x => x.name == name);
 		if(us != null) spells.Remove( us );
 	}
 
 	public void UseSpell(string name) {
-		Debug.Log("Spell: " + name);
-		
 		UserSpell us = spells.Find(x => x.name == name);
 		if(us != null) us.uses++;
 	}
