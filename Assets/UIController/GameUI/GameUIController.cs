@@ -13,6 +13,12 @@ public class GameUIController : MonoBehaviour {
 	
 	private string mapName;
 
+	private bool gameStarted;
+	private float timeToStart;
+	private GameObject initialCanvas;
+	private Text initialText;
+	private Text mapNameText;
+
 	private Player player;
 	private Text playerInfoText;
 	private Image healthbarImage;
@@ -26,6 +32,13 @@ public class GameUIController : MonoBehaviour {
 	void Awake () {
 		syncController = GameObject.FindObjectOfType<SyncController>();
 		spellsController = GameObject.FindObjectOfType<SpellsController>();
+
+		timeToStart = Time.time + 4;
+		initialCanvas = transform.Find("InitialCanvas").gameObject;
+		initialText = initialCanvas.transform.Find("InitialText").GetComponent<Text>();
+		mapNameText = initialCanvas.transform.Find("MapNameText").GetComponent<Text>();
+		initialCanvas.SetActive(true);
+		gameStarted = false;
 
 		playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
 		healthbarImage = GameObject.Find("HealthbarImage").GetComponent<Image>();
@@ -45,7 +58,13 @@ public class GameUIController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if(!gameStarted) {
+			float t = Mathf.Round(timeToStart - Time.time) - 1;
+			if(t > 0) initialText.text = t.ToString();
+			else initialText.text = "GO!";
+			return;
+		}
+
 		if(player == null) {
 			player = syncController.GetPlayer();
 		} else {
@@ -56,15 +75,24 @@ public class GameUIController : MonoBehaviour {
 				playerInfoText.text = "Knockback " + player.Knockback;
 			} else {
 				healthbarImage.rectTransform.localScale = Vector3.zero;
-				playerInfoText.text = "U IS DED";
+				playerInfoText.text = "NO WAIFU NO LAIFU";
 			}
 		}
 		
 	}
 
+	public void SetMapName(string mapName) {
+		mapNameText.text = mapName;
+	}
+
 	public void UseSpell(string spellName) {
 		GameSpellIcon sIcon = spellIcons.Find(x => x.spellName == spellName);
 		sIcon.UseSpell();
+	}
+
+	public void StartGame() {
+		initialCanvas.SetActive(false);
+		gameStarted = true;
 	}
 
 	public void EndGame(bool win) {

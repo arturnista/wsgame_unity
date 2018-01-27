@@ -29,6 +29,8 @@ public class SyncController : MonoBehaviour {
     private List<User> usersInRoom;
     private Color userColor;
 
+    private string mapName;
+
     private string roomName;
     private string userName;
     private bool isGameRunning = false;
@@ -120,11 +122,14 @@ public class SyncController : MonoBehaviour {
     private void OnChangeLevel(Scene origin, Scene current) {
         
         if(current.name == "Game") {
-            gameUIController = GameObject.FindObjectOfType<GameUIController>();
             this.isGameRunning = true;
+
+            gameUIController = GameObject.FindObjectOfType<GameUIController>();
             mapController = GameObject.FindObjectOfType<MapController>();
             cameraBehavior = GameObject.FindObjectOfType<CameraBehavior>();
             actionController = GameObject.FindObjectOfType<ActionController>();
+            
+            gameUIController.SetMapName(this.mapName);
             actionController.SetSpells(spellsSelected);
         } else if(current.name == "Menu") {
             menuUIController = GameObject.FindObjectOfType<MenuUIController>();
@@ -225,12 +230,14 @@ public class SyncController : MonoBehaviour {
 
     void GameWillStart(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game will start");
+        this.mapName = e.data["map"]["name"].str;
         SceneManager.LoadScene("Game");    
     }
 
     void GameStart(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game start");
         this.isPlayerAlive = true;
+        gameUIController.StartGame();
     }
 
     void GameWillEnd(SocketIOEvent e) {
