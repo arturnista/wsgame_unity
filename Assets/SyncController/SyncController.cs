@@ -242,8 +242,11 @@ public class SyncController : MonoBehaviour {
 
     void GameWillEnd(SocketIOEvent e) {
 		Debug.Log("[SocketIO] Game will end");
-        bool winner = this.playerId == e.data["winner"]["id"].str;
-        gameUIController.EndGame(winner);
+        bool isWinner = this.playerId == e.data["winner"]["id"].str;
+        User userWinner = usersInRoom.Find(x => x.id == e.data["winner"]["userId"].str);
+        gameUIController.EndGame(isWinner, userWinner);
+
+        this.GetUser().winCount++;
     }
 
     void GameEnd(SocketIOEvent e) {

@@ -25,6 +25,7 @@ public class GameUIController : MonoBehaviour {
 
 	private Transform spellsListCanvas;
 	private Transform endSpellsListCanvas;
+	private Text winnerNameText;
 	private List<GameSpellIcon> spellIcons;
 
 	private GameObject endCanvas;
@@ -42,8 +43,10 @@ public class GameUIController : MonoBehaviour {
 
 		playerInfoText = GameObject.Find("InfoText").GetComponent<Text>();
 		healthbarImage = GameObject.Find("HealthbarImage").GetComponent<Image>();
+
 		spellsListCanvas = GameObject.Find("SpellsListCanvas").transform;
 		endCanvas = transform.Find("EndCanvas").gameObject;
+		winnerNameText = endCanvas.transform.Find("Panel/WinnerCanvas/WinnerNameText").GetComponent<Text>();			
 		endCanvas.SetActive(false);
 		
 		spellIcons = new List<GameSpellIcon>();
@@ -95,7 +98,7 @@ public class GameUIController : MonoBehaviour {
 		gameStarted = true;
 	}
 
-	public void EndGame(bool win) {
+	public void EndGame(bool win, User winner) {
 		Text textName;
 		endCanvas.SetActive(true);
 		if(win) {
@@ -108,6 +111,8 @@ public class GameUIController : MonoBehaviour {
 
 		User user = syncController.GetUser();
 		textName.text = user.name;
+
+		winnerNameText.text = winner != null ? winner.name : "BOT";
 
 		endSpellsListCanvas = endCanvas.transform.Find("Panel/SpellsCanvas/SpellsList");
 		foreach(UserSpell us in user.spells) {

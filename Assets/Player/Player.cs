@@ -47,17 +47,17 @@ public class Player : SyncObject {
 		this.life = data["life"].n;
 		this.knockback = data["knockbackValue"].n;
 		this.status = data["status"].str;
-		if(!staticValueDefined) {
+		if(!this.staticValueDefined) {
 			Color color;
 			ColorUtility.TryParseHtmlString(data["color"].str, out color);
 			this.spriteRenderer.color = color;
 
-			staticValueDefined = true;
+			this.staticValueDefined = true;
 		}
 
 		List<JSONObject> modifiers = data["modifiers"].list;
 		if(modifiers.Count > 0) {
-			JSONObject hasReflectShield = modifiers.Find(x => x.str == "reflect_shield");
+			JSONObject hasReflectShield = modifiers.Find(x => x.str == "Reflect Shield");
 			if(hasReflectShield && !reflectShield.gameObject.activeSelf) {
 				reflectShield.gameObject.SetActive(true);
 			}
